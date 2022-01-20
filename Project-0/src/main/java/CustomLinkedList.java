@@ -37,10 +37,7 @@ public class CustomLinkedList<T> implements CustomListInterface<T>, Iterable<T>{
      */
     @Override
     public void add(T t, int index) throws IndexOutOfBoundsException {
-        // handle if empty list
-
         //Implement this method
-
         Node nodeBeingChecked = head;
         for(int i=0; i<size; i++) {
             //if it matches, insert new node
@@ -110,7 +107,6 @@ public class CustomLinkedList<T> implements CustomListInterface<T>, Iterable<T>{
     @Override
     public int contains(T t) {
         //Implement this method
-        // Iterate through
         Node nodeBeingChecked = head;
         for(int i=0; i<size; i++) {
             //if it matches, insert new node
@@ -313,10 +309,13 @@ public class CustomLinkedList<T> implements CustomListInterface<T>, Iterable<T>{
 
     // This should only be used with test data
     public void testPrintAllElements() {
+        System.out.print("All elements: [");
         for(int i=0; i<this.size; i++) {
-            System.out.println(get(i));
+            System.out.print(" " + get(i) + " ");
         }
+        System.out.println("]");
     }
+
 
     // A sequence of tests to test .remove()
     public void testRemoval() {

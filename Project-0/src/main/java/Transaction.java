@@ -1,6 +1,6 @@
 public class Transaction {
     // Each transaction is a single debit/credit that forms an account's transaction history.
-    Integer transactionId;
+    Integer id;
     Integer accountId;
     // TODO: This is a Date object, fix when more awake
     String date;

@@ -121,6 +121,7 @@ public class Login {
     // Also gets input for registration - integers only
     private Integer getUserNumericalInput() {
         Scanner input = new Scanner(System.in);
+        // maybe handle this just as a string
         if(input.hasNextInt()) {
             return input.nextInt();
         }
