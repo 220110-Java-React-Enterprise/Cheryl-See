@@ -1,6 +1,6 @@
 
 // This will be an interface
-public interface DataSourceCRUD<T> {
+public interface RepoInterface<T> {
     // Returning the data (T) serves as confirmation of what you did to make sure it was added correctly
 
     // Create

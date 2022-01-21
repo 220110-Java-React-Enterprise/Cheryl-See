@@ -3,7 +3,7 @@ import java.util.Scanner;
 
 public class MainMenu {
 
-    public static void doMenu(User customer) {
+    public static void doMenu(CustomerModel customer) {
         Integer choice;
         do {
             choice = getUserMenuSelection();

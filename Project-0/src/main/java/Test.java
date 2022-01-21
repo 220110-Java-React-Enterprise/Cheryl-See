@@ -22,3 +22,26 @@ public class Test {
         // Attempting to add incorrect type (stretch goal)
     }
 }
+
+
+/*
+
+                case 4: {
+                    // TODO: This option shouldn't exist.  Only for debugging linked list.
+                    System.out.println("Testing linked list.");
+                    CustomLinkedList<Integer> list = new CustomLinkedList<>();
+                    // Populate list
+
+                for(int i=1; i<11; i++) {
+                    list.add(i);
+                }
+
+                    list.add(1);
+                            list.testPrintAllElements();
+                            System.out.println("original size: " + list.size());
+                            list.remove(0);
+                            System.out.println("new size: " + list.size());
+                            list.testPrintAllElements();
+                            break;
+                            } // Remove this
+ */
