@@ -20,7 +20,7 @@ public class Input {
     // TODO: Validation stuff and abstractions
     // This should be a different name? What if I want a more generic/unchecked one?
     // This will get a string and check that it only includes letters
-    public static String getString() {
+    public String getString() {
         String input = scanner.nextLine();
         return input;
     }

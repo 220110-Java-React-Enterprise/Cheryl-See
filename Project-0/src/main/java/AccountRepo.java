@@ -57,7 +57,7 @@ public class AccountRepo {
 
     // We are not creating new accounts, but we are updating them (balance)
     // updateBalance assumes that this update has been verified/approved through other methods first.
-    public AccountModel updateBalance(AccountModel model) {
+    public Boolean updateBalance(AccountModel model) {
         try {
             String sql = "UPDATE account SET balance = ? WHERE account_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -67,8 +67,9 @@ public class AccountRepo {
         }
         catch(SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return model;
+        return true;
     }
 
     public AccountRepo() {

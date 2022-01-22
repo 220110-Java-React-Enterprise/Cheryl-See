@@ -9,6 +9,7 @@ public class CustomerModel {
     private String city;
     private String state;
     private String zipCode;
+    private CustomLinkedList<AccountModel> accounts;
 
     public String getEmail() {
         return email;

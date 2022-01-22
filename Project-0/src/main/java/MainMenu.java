@@ -1,16 +1,18 @@
 import java.util.Hashtable;
-import java.util.Scanner;
 
 public class MainMenu {
+    CustomerModel customer;
+    Account account;
+    Input input;
 
-    public static void doMenu(CustomerModel customer) {
+    public void doMenu(CustomerModel customer) {
         Integer choice;
         do {
             choice = getUserMenuSelection();
             switch(choice) {
                 case 1: {
                     System.out.println("View current account balance.");
-                    customer.printAccounts();
+                    //customer.printAccounts();
                     break;
                 }
                 case 2: {
@@ -19,6 +21,7 @@ public class MainMenu {
                 }
                 case 3: {
                     System.out.println("Withdraw funds from an account.");
+                    account.withdrawFrom();
                     break;
                 }
                 case 4: {
@@ -26,19 +29,15 @@ public class MainMenu {
                     break;
                 }
                 case 5: {
-                    System.out.println("Create a new bank account.");
-                    break;
-                }
-                case 6: {
-                    // Should this be logout only or straight to exit?
+                    // Alternatively could make this into returning to login screen
                     System.out.println("Exit program.");
                     break;
                 }
             }
-        } while(choice != 6);
+        } while(choice != 5);
     }
 
-    private static void displayMainMenu() {
+    private Integer getUserMenuSelection() {
         System.out.println("Main Menu");
         System.out.println("Please select one of the following options:");
         System.out.println("1. View current account balance");
@@ -47,23 +46,13 @@ public class MainMenu {
         System.out.println("4. Transfer funds from an account.");
         System.out.println("5. Create a new bank account.");
         System.out.println("6. Exit program.");
-    }
-
-    private static Integer getUserMenuSelection() {
-        displayMainMenu();
         System.out.print("Your selection: ");
-        Scanner s = new Scanner(System.in);
-
-        // Parse user's input
-        if (s.hasNextInt()) {
-            return s.nextInt();
-        } else {
-            return parseInput(s.nextLine());
-        }
+        String choice = input.getString();
+        return parseInput(choice);
     }
 
     // Takes string input and converts it to an integer (menu choice) using a list of predefined words.
-    private static Integer parseInput(String input) {
+    private Integer parseInput(String input) {
         // Checking for some common words in the login menu
         Hashtable<Integer, String[]> wordList = new Hashtable<Integer, String[]>(){};
 
@@ -92,5 +81,11 @@ public class MainMenu {
         System.out.println("Debug: Didn't find menu choice in wordlist.");
         // Some non-input was selected.
         return -1;
+    }
+
+    MainMenu(CustomerModel customer) {
+        this.customer = customer;
+        this.account = new Account(customer.getCustomerId());
+        this.input = Input.getInputReference();
     }
 }
