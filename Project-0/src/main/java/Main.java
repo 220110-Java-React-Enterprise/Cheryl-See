@@ -7,8 +7,8 @@ public class Main {
         if (customer != null) {
             System.out.println("Hello, " + customer.getFirstName() + "!");
             System.out.println("Menu displayed.");
-            //customer.printAccounts();
-            //MainMenu.doMenu(customer);
+            MainMenu menu = new MainMenu(customer);
+            menu.doMenu();
         }
     }
 }

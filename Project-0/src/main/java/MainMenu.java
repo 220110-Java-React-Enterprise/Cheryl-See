@@ -5,7 +5,7 @@ public class MainMenu {
     Account account;
     Input input;
 
-    public void doMenu(CustomerModel customer) {
+    public void doMenu() {
         Integer choice;
         do {
             choice = getUserMenuSelection();
@@ -47,11 +47,11 @@ public class MainMenu {
     private Integer getUserMenuSelection() {
         System.out.println("Main Menu");
         System.out.println("Please select one of the following options:");
-        System.out.println("1. View current account balance");
+        System.out.println("1. View an account overview.");
         System.out.println("2. Deposit funds into an account.");
         System.out.println("3. Withdraw funds from an account.");
         System.out.println("4. Transfer funds from an account.");
-        System.out.println("5. Create a new bank account.");
+        System.out.println("5. View transaction history for a specific account.");
         System.out.println("6. Exit program.");
         System.out.print("Your selection: ");
         String choice = input.getString();
@@ -63,11 +63,11 @@ public class MainMenu {
         // Checking for some common words in the login menu
         Hashtable<Integer, String[]> wordList = new Hashtable<Integer, String[]>(){};
 
-        String[] wordList1 = new String[]{"view", "balance", "one", "1"};
+        String[] wordList1 = new String[]{"view", "balance", "summary", "overview", "one", "1"};
         String[] wordList2 = new String[]{"deposit", "two", "2"};
         String[] wordList3 = new String[]{"withdraw", "three", "3"};
         String[] wordList4 = new String[]{"transfer", "four", "4"};
-        String[] wordList5 = new String[]{"create", "five", "5"};
+        String[] wordList5 = new String[]{"transaction", "history", "transactions", "five", "5"};
         String[] wordList6 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "six", "6"};
 
         wordList.put(1, wordList1);
