@@ -11,24 +11,31 @@ public class MainMenu {
             choice = getUserMenuSelection();
             switch(choice) {
                 case 1: {
-                    System.out.println("View current account balance.");
-                    //customer.printAccounts();
+                    System.out.println("View account summary.");
+                    account.printAllAccountData();
                     break;
                 }
                 case 2: {
                     System.out.println("Deposit funds into an account.");
+                    account.deposit();
                     break;
                 }
                 case 3: {
                     System.out.println("Withdraw funds from an account.");
-                    account.withdrawFrom();
+                    account.withdraw();
                     break;
                 }
                 case 4: {
                     System.out.println("Transfer funds from an account.");
+                    account.transfer();
                     break;
                 }
                 case 5: {
+                    System.out.println("View transaction history for a specified account.");
+                    account.transactionHistory();
+                    break;
+                }
+                case 6: {
                     // Alternatively could make this into returning to login screen
                     System.out.println("Exit program.");
                     break;

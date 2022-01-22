@@ -25,15 +25,21 @@ public class Input {
         return input;
     }
 
-    // Not sure if this will be used.
+    // Collects a currency value from the user.
+    // This should only allow numbers, round to 2 decimal places
+    // and only allow positive nonzero values.
+    // returns a negative value (-1.0) if some input error was detected (ex. gibberish, nonnumerical entry)
     public Double getCurrency() {
         try {
-            return Double.parseDouble(scanner.nextLine());
+            Double value = Double.parseDouble(scanner.nextLine());
+            if (value > 0) {
+                return value;
+            }
         }
         catch (NumberFormatException e) {
             System.out.println("Error in getNumericalInput(): Not a number.");
-            return -1.0;
         }
+        return -1.0;
     }
 
     public Integer getInteger() {
