@@ -37,20 +37,20 @@ public class MainMenu {
                 }
                 case 6: {
                     // Alternatively could make this into returning to login screen
-                    System.out.println("Exit program.");
+                    System.out.println("Exiting program.  Have a nice day!");
+                    System.exit(0);
                     break;
                 }
             }
-        } while(choice != 5);
+        } while(choice != 6);
     }
 
     private Integer getUserMenuSelection() {
-        System.out.println("Main Menu");
-        System.out.println("Please select one of the following options:");
+        System.out.println("\nPlease select one of the following options:");
         System.out.println("1. View an account overview.");
         System.out.println("2. Deposit funds into an account.");
         System.out.println("3. Withdraw funds from an account.");
-        System.out.println("4. Transfer funds from an account.");
+        System.out.println("4. Transfer funds from one account to another.");
         System.out.println("5. View transaction history for a specific account.");
         System.out.println("6. Exit program.");
         System.out.print("Your selection: ");

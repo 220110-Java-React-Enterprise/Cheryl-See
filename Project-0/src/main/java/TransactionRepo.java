@@ -22,6 +22,8 @@ public class TransactionRepo {
                 model.setTransactionId(results.getInt("transaction_id"));
                 model.setAccountId(results.getInt("account_id"));
                 model.setAmount(results.getDouble("amount"));
+                model.setType(results.getString("type"));
+                model.setSource(results.getInt("source"));
                 model.setDestination(results.getInt("destination"));
                 model.setDate(results.getDate("date"));
                 transactions.add(model);
@@ -39,11 +41,13 @@ public class TransactionRepo {
     // Returns a boolean indicating success (true/false)
     public Boolean addTransaction(TransactionModel model) {
         try {
-            String sql = "INSERT INTO transaction (account_id, amount, destination) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO transaction (account_id, amount, type, source, destination) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, model.getAccountId());
             statement.setDouble(2, model.getAmount());
-            statement.setInt(3, model.getDestination());
+            statement.setString(3, model.getType());
+            statement.setInt(4, model.getSource());
+            statement.setInt(5, model.getDestination());
             statement.executeUpdate();
             return true;
         }

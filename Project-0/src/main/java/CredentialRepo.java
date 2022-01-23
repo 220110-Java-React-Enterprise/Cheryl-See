@@ -7,12 +7,14 @@ public class CredentialRepo {
     private final Connection connection;
 
     // Handles the write operations for the Credentials.
+    // This is meant for people registering for the first time
+    // Returns true if successful, else it returns false
     public Boolean register(CredentialModel model) {
         try {
             String sql = "INSERT INTO credential(username, password, customer_id) VALUES (?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, model.getUsername());
-            statement.setString(2, model.getUsername());
+            statement.setString(2, model.getPassword());
             statement.setInt(3, model.getCustomerId());
             statement.executeUpdate();
         }
@@ -49,7 +51,8 @@ public class CredentialRepo {
         return null;
     }
 
-    // Retrieves a credential record based on the ID number.
+    // Retrieves a single credential record based on the username and password.
+    // If the username and password do not match, then null is returned.
     // Intended to be used with existing registrations
     public CredentialModel getByCredentials(String username, String password) {
         try {
@@ -59,8 +62,9 @@ public class CredentialRepo {
             statement.setString(2, password);
             ResultSet results = statement.executeQuery();
 
-            CredentialModel model = new CredentialModel();
+            CredentialModel model = null;
             while(results.next()) {
+                model = new CredentialModel();
                 model.setCredentialId(results.getInt("credential_id"));
                 model.setUsername(results.getString("username"));
                 model.setPassword(results.getString("password"));

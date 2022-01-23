@@ -56,17 +56,18 @@ public class Input {
     // Gets the username and verifies that it is composed of legal characters.
     public String getUsername() {
         do {
-            System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
             System.out.print("Please enter a username: ");
             String input = getString();
-
             if (isValidUsername(input)) {
                 return input;
             }
             else {
-                System.out.println("Invalid character detected.  Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
+                if (input.equals("quit") || input.equals("cancel")) {
+                    return "";
+                }
+                System.out.println("Invalid username.  Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
             }
-        } while(true);
+        } while (true);
     }
 
     // Parse user's input - must be a valid username
@@ -88,13 +89,13 @@ public class Input {
     // Returns a string between 8-30 characters and legal characters.
     public String getPassword() {
         do {
-            System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
             System.out.print("Please enter a password: ");
             String input = getString();
 
             if (isValidPassword(input)) {
                 return input;
             }
+            System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
         } while(true);
     }
 

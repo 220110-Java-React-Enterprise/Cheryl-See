@@ -5,8 +5,8 @@ public class Main {
         CustomerModel customer = login.doLogin();
 
         if (customer != null) {
-            System.out.println("Hello, " + customer.getFirstName() + "!");
-            System.out.println("Menu displayed.");
+            System.out.println("Hello, " + customer.getFirstName() + "!\n");
+
             MainMenu menu = new MainMenu(customer);
             menu.doMenu();
         }

@@ -5,6 +5,7 @@
 
 *.idea
 *.properties
+extraqueries.txt
 
 ### Java ###
 # Compiled class file

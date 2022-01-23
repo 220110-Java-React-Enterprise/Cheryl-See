@@ -31,7 +31,7 @@ public class Login {
                     break;
                 }
                 case 3: {
-                    System.out.println("Exit Program.");
+                    System.out.println("Exiting program.  Have a nice day!");
                     return null;
                 }
 
@@ -49,7 +49,7 @@ public class Login {
         System.out.println("2. No, I do not have an online account yet.");
         System.out.println("3. I would like to exit the program.");
         System.out.print("Your selection: ");
-        String string = Input.getString();
+        String string = input.getString();
         return parseInput(string);
     }
 
@@ -89,13 +89,13 @@ public class Login {
     // Returns the customer's data if found; else it returns null and the user will go through the login again.
     // Attempts the process three times before returning to the login menu.
     private CustomerModel getLoginCredentials() {
-        System.out.println("Please enter your username: ");
-
         for (int attempts=3; attempts > 0; attempts--) {
             String username = input.getUsername();
             String password = input.getPassword();
             //CredentialRepo credentialRepo = new CredentialRepo();
             CredentialModel credentials = credentialRepo.getByCredentials(username, password);
+            // Credentialrepo generates a new credentials object and returns it, so check if has anything
+
             if (credentials != null) {
                 //CustomerRepo customerRepo = new CustomerRepo();
                 CustomerModel customer = customerRepo.getCustomerById(credentials.getCustomerId());
@@ -104,7 +104,7 @@ public class Login {
                     return customer;
                 }
             }
-            System.out.println("Sorry, the username and password did not work.  You have " + attempts + " remaining.");
+            System.out.println("Sorry, the username and password did not work.  You have " + (attempts-1) + " attempts remaining.");
         }
         return null;
     }
@@ -121,12 +121,29 @@ public class Login {
                 customer = customerRepo.getCustomerById(customerId);
 
                 if (customer != null) {
+                    System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
                     String username = input.getUsername();
+                    // User wants to cancel registration (entered "quit" or "cancel")
+                    //System.out.println("You can also enter 'cancel' to quit.");
+                    // TODO: Add support for cancel/quit
+                    if (userInitiatedCancel(username)) {
+                        return null;
+                    }
+                    System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
                     String password = input.getPassword();
+                    if (userInitiatedCancel(password)) {
+                        return null;
+                    }
+
                     // Customer data has been located, add their credentials to the database
                     credentials = new CredentialModel(customerId, username, password);
-                    credentialRepo.register(credentials);
-                    return customer;
+                    if (credentialRepo.register(credentials)) {
+                        return customer;
+                    }
+                    else {
+                        System.out.println("Error: Some error occurred when adding credentials.");
+                        return null;
+                    }
                 }
                 else {
                     System.out.println("Debug: Error: Customer number " + customerId + " not found.");
@@ -137,6 +154,15 @@ public class Login {
         // User was unable to register for some reason/ too many invalid attempts
         System.out.println("Registration cancelled.");
         return null;
+    }
+
+    private Boolean userInitiatedCancel(String input) {
+        if (input.equals("quit") || input.equals("cancel")) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     Login() {

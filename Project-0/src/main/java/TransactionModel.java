@@ -67,42 +67,38 @@ public class TransactionModel {
         this.destination = destination;
     }
 
-    // This constructor is meant for t
-    public TransactionModel(Integer accountId, Double amount, String type, Integer sourceDest) {
-        this.accountId = accountId;
-        this.amount = amount;
-        this.type = type;
-        switch(type) {
-            case "deposit":
-                // Depositing to this account (creating money) so using placeholder -1
-                this.source = sourceDest; //self
-                this.destination = accountId;
-                break;
-            case "withdraw":
-                // Removing money from this account so there is no source or destination?
-                this.source = accountId;
-                this.destination = sourceDest;  // self/user
-                break;
-            case "transfer":
-                // There needs to be two records, one with +/- and flipped source/dest
-                if (amount > 0) {
-                    // This is a positive amount, so it is receiving money
-                    this.source = sourceDest;
-                    this.destination = accountId;
-                } else {
-                    // This is a negative amount, so it is losing money
-                    this.source = accountId;
-                    this.destination = sourceDest;
-                }
-                break;
+    // This constructor is meant specifically for transfers
+    public TransactionModel(Integer accountId, Double amount, String type, Integer source, Integer destination) {
+        if (type.equals("transfer")) {
+            this.accountId = accountId;
+            this.amount = amount;
+            this.type = type;
+            // There needs to be two records, one with +/- and flipped source/dest
+            this.source = source;
+            this.destination = destination;
+        }
+        else {
+            // This is technically the wrong constructor, so maybe we can call the other?
+            System.out.println("Wrong constructor was called - should only be for transfers.");
         }
     }
 
-    // This constructor is intended for transfers - unused now?
-    public TransactionModel(Integer accountId, Double amount, Integer destination) {
+    // This constructor is intended for deposits and withdrawals (one-way money direction)
+    public TransactionModel(Integer accountId, Double amount, String type) {
         this.accountId = accountId;
         this.amount = amount;
-        this.destination = destination;
+        this.type = type;
+        if (type.equals("deposit")) {
+            this.source = -1;
+            this.destination = accountId;
+        }
+        else if (type.equals("withdraw")) {
+            this.source = accountId;
+            this.destination = -1;
+        }
+        else {
+            System.out.println("Error: This constructor should not be used for anything other than withdraw/deposit.");
+        }
     }
 
     // Empty constructor used by TransactionRepo
