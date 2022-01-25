@@ -97,4 +97,18 @@ public class CustomerModel {
     CustomerModel(int customerId) {
         this.customerId = customerId;
     }
+
+    // This is used during joint account - new CustomerModel being added
+    CustomerModel(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+
+    // This is used during new registration - new CustomerModel being added
+    CustomerModel(String firstName, String lastName, String email) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
 }

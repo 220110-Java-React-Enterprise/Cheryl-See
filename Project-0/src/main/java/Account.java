@@ -4,6 +4,7 @@
 public class Account {
     CustomLinkedList<AccountModel> list;
     Input input;
+    CustomerRepo customerRepo = new CustomerRepo();
     AccountRepo accountRepo = new AccountRepo();
     TransactionRepo transactionRepo = new TransactionRepo();
     AccountOwnerRepo accountOwnerRepo = new AccountOwnerRepo();
@@ -73,7 +74,7 @@ public class Account {
     // Returns a boolean if the transaction was successfully performed.
     private Boolean doAccountBalanceUpdate(AccountModel account, String type, Double amount, Integer source, Integer destination) {
         Double newBalance;
-        Double transferFromBalance; // Only used in transfers
+        //Double transferFromBalance; // Only used in transfers
         switch (type) {
             case "withdraw":
                 newBalance = account.getBalance() - amount;
@@ -112,7 +113,7 @@ public class Account {
                     accountTransferredFrom.setBalance(newBalance);
                     // Get the absolute value for the "withdrawal" part
                     amount = 0 - amount;
-                    // Make a new transaction w/ the inverted values (amount, destination, source)
+                    // Second transaction - just using the -amount with same source and destination accounts
                     TransactionModel transactionWithdraw = new TransactionModel(accountTransferredFrom.getAccountId(), amount, "transfer", source, destination);
                     doTransaction(accountTransferredFrom, transactionWithdraw);
                     return true;
@@ -179,7 +180,6 @@ public class Account {
             accountDestination = promptUserForAccountSelection();
         }
 
-
         // See if person has the funds for this transaction
         if (doesUserHaveFundsIn(accountSource, amount)) {
             if (doAccountBalanceUpdate(accountDestination, "transfer", amount, accountSource.getAccountId(), accountDestination.getAccountId())) {
@@ -228,6 +228,7 @@ public class Account {
         }
     }
 
+
     // Goes through the list of the customer's accounts and retrieves the balances.
     // Intended for use as a high level overview of account information.
     public void printAllAccountData() {
@@ -251,7 +252,7 @@ public class Account {
     // Creates a new bank account (ex. user already has a customer ID / login credentials, and wants to open a new acct)
     public void createAccount() {
         // Prompt user for account type (checking, savings)
-        System.out.println("What type of account would you like to open? (Checking, savings)");
+        //System.out.println("What type of account would you like to open? (Checking, savings)");
         String accountType = input.getCheckingType();
 
         System.out.print("How much would you like to deposit now? $");
@@ -269,13 +270,27 @@ public class Account {
         System.out.println("Would you like to add a second person to this account?");
         Integer owner2 = -1;
         if (input.getYesOrNo()) {
-            // TODO: stuff
-            // Locate second user and get their customerId
-            // Enter their full legal name?
-            // If customer does not exist, create an entry?
-            // Otherwise, locate their record and use that customerId
-            // owner2 = ??
-            System.out.println("Debug: Added second user.");
+            // Simplifying this by simply adding a second name (rather than looking up the user ID, etc.)
+            System.out.println("What is the name of the second user?");
+            System.out.print("First name: ");
+            String firstName = input.getName();
+            System.out.print("Last name: ");
+            String lastName = input.getName();
+
+            System.out.println("You are adding " + firstName + " " + lastName + " to the account.");
+            System.out.println("Is this correct?");
+            while (!input.getYesOrNo()) {
+                System.out.println("What is the name of the second user?");
+                System.out.print("First name: ");
+                firstName = input.getName();
+                System.out.print("Last name: ");
+                lastName = input.getName();
+            }
+
+            // Creating a new customer entry for this user
+            CustomerModel customerModel = new CustomerModel(firstName, lastName);
+            // Pass new customerId (owner2) to constructor where it will add an additional AccountOwner record
+            owner2 = customerRepo.addNewCustomer(customerModel);
         }
 
         // Create Account
@@ -289,12 +304,13 @@ public class Account {
             syncData();
             TransactionModel transactionModel = new TransactionModel(accountId, initialDeposit, "deposit");
             transactionRepo.addTransaction(transactionModel);
-            System.out.println("Your account has been created.");
+            System.out.printf("Your %s account has been created with an initial deposit of $%.2f.%n", accountType, initialDeposit);
         }
         else {
             System.out.println("There was an error creating your account.  Account creation has been cancelled.");
         }
     }
+
 
     // Retrieves the transaction history for the specified account.
     // Prompts user and prints a list of transactions for the selected account.
@@ -343,6 +359,7 @@ public class Account {
         }
     }
 
+
     // This displays a list of the user's accounts and asks the user to select an account.
     // Returns the AccountModel of the selected account, or returns null if the user chooses to cancel the transaction.
     // Note: returns null if the user selects "cancel transaction".
@@ -381,6 +398,7 @@ public class Account {
             }
         }
     }
+
 
     // Primarily for use with the account types, but really anything
     // Accepts a string, returns a Capitalized version of the string.

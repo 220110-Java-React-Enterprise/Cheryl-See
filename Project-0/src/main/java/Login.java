@@ -113,41 +113,60 @@ public class Login {
     // Returns the customer's data if found; else it returns null and the user will go through the login again.
     // This attempts the registration process three times before returning to the login menu.
     private CustomerModel registerNewUser() {
-        for (int i=0; i<3; i++) {
+        System.out.println("Are you an existing customer and have your customer ID # on hand?");
+        if (input.getYesOrNo()) {
+            // do lookup by id and register
             System.out.println("Please enter your customer account number: ");
             Integer customerId = input.getInteger();
             if (customerId >= 0) {
                 // Valid account number found, retrieving customer data
                 customer = customerRepo.getCustomerById(customerId);
+            }
+            else {
+                System.out.println("Sorry, we do not have a customer id by that number (" + customerId + ").");
+            }
+        }
+        else {
+            // user needs a customer ID number
+            customer = createNewCustomerRecord();
+        }
 
-                if (customer != null) {
-                    System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
-                    String username = input.getUsername();
-                    // User wants to cancel registration (entered "quit" or "cancel")
-                    //System.out.println("You can also enter 'cancel' to quit.");
-                    // TODO: Add support for cancel/quit
-                    if (userInitiatedCancel(username)) {
-                        return null;
-                    }
-                    System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
-                    String password = input.getPassword();
-                    if (userInitiatedCancel(password)) {
-                        return null;
-                    }
+        // Checking if error occurred or user wanted to cancel
+        if (customer == null) {
+            return null;
+        }
 
-                    // Customer data has been located, add their credentials to the database
-                    credentials = new CredentialModel(customerId, username, password);
-                    if (credentialRepo.register(credentials)) {
-                        return customer;
-                    }
-                    else {
-                        System.out.println("Error: Some error occurred when adding credentials.");
-                        return null;
-                    }
-                }
-                else {
-                    System.out.println("Debug: Error: Customer number " + customerId + " not found.");
-                }
+        for (int i=0; i<3; i++) {
+            System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
+            String username = input.getUsername();
+
+            if (userInitiatedCancel(username)) {
+                return null;
+            }
+            System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
+            String password = input.getPassword();
+
+            if (userInitiatedCancel(password)) {
+                return null;
+            }
+
+            // Get the user's email address if there is none on record?  Or force entry now?
+            //String email = input.getEmail();
+
+            // Customer data has been located, add their credentials to the database
+            credentials = new CredentialModel(customer.getCustomerId(), username, password);
+            Integer newCredentialId = credentialRepo.register(credentials);
+
+            if (newCredentialId != null) {
+                Boolean success = customerRepo.addNewCredentials(customer.getCustomerId(), newCredentialId);
+                // could add another check here based on success
+                // also update the customer's email address with what was just entered - not sure if needed, or check if null
+                customerRepo.addEmailAddress(email, customer.getCustomerId());
+                return customer;
+            }
+            else {
+                System.out.println("Error: Some error occurred when adding credentials.");
+                return null;
             }
         }
 
@@ -156,8 +175,39 @@ public class Login {
         return null;
     }
 
+
+    // This is to create a brand new customer record (ex. joint account, registration)
+    // It prompts the user for basic details (just the name for simplicity) and returns a CustomerModel w/ info.
+    private CustomerModel createNewCustomerRecord() {
+        System.out.println("Let's create a new customer record for you.");
+
+        System.out.print("What is your first name?: ");
+        String firstName = input.getName();
+        // User cancelled process
+        if (firstName == null) {
+            return null;
+        }
+
+        System.out.print("What is your last name?: ");
+        String lastName = input.getName();
+        // User cancelled process
+        if (lastName == null) {
+            return null;
+        }
+
+        String email = input.getEmail();
+
+        CustomerModel newCustomer = new CustomerModel(firstName, lastName, email);
+        Integer customerId = customerRepo.addNewCustomer(newCustomer);
+        newCustomer.setCustomerId(customerId);
+        return newCustomer;
+    }
+
+
+    // Checks whether a user entered input that meant cancelling out of the current menu.
+    // Returns a true if it finds something like cancel, false otherwise.
     private Boolean userInitiatedCancel(String input) {
-        if (input.equals("quit") || input.equals("cancel")) {
+        if (input.equals("quit") || input.equals("cancel") || input.equals("exit")) {
             return true;
         }
         else {

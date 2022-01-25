@@ -1,10 +1,13 @@
-// This class handles all the input and maybe adds some validation methods
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
+// This class handles all the input and most of the validation.  Most functions either return
+// null or -1 if bad input is detected, though some loop and force re-entry until satisfied.
+// Those typically include accepting "cancel" or "quit" to exit the loop.
 
 public class Input {
     private static Input input;
@@ -19,14 +22,47 @@ public class Input {
     private Input(){}
 
 
-    // Gets user input an returns a string.
-    // TODO: Validation stuff and abstractions
-    // This should be a different name? What if I want a more generic/unchecked one?
-    // This will get a string and check that it only includes letters
-    // TODO: But what of numbers?  Ex. "1" should be legal but not text11
+    // Making this a helper function because apparently I don't like using the scanner.
+    // Gets input (not validated) and returns the string.
+    public String getInput() {
+        return scanner.nextLine();
+    }
+
+
+    // Gets user input (alphanumeric only) and returns the string.
     public String getString() {
-        String input = scanner.nextLine();
-        return input;
+        String input = getInput();
+        if (isValidInputOfType("alphanumeric", input)) {
+            return input;
+        }
+        else {
+            return "";
+        }
+    }
+
+
+    // Similar to getString, this gets a user's name, validates that it is only letters and returns a string.
+    // Intended for use with registration / new customer record.
+    public String getName() {
+        do {
+            System.out.print("> ");
+            String name = input.getInput();
+            if (userInitiatedCancel(name)) {
+                System.out.println("Cancelling registration.");
+                // check what effect this really has
+                return null;
+            }
+            if (isValidInputOfType("name", name)) {
+                // Capitalize the first letter of the string and make the rest lower case
+                String result = name.substring(0,1).toUpperCase();
+                // Attach the rest of the string (lower case)
+                result += name.substring(1).toLowerCase();
+                return result;
+            }
+            else {
+                System.out.println("Invalid characters detected.  Please try again.");
+            }
+        } while(true);
     }
 
     // Collects a currency value from the user.  This should only accept positive values (or zero).
@@ -60,12 +96,15 @@ public class Input {
     // If some error is detected, a -1 is returned and should be handled by the calling method.
     // Currently, this is being used for customerId entry in registerNewUser() and promptUserForAccountSelection().
     public Integer getInteger() {
-        try {
-            return Integer.parseInt(scanner.nextLine());
-        }
-        catch (NumberFormatException e) {
-            return -1;
-        }
+        do {
+            String input = getInput();
+            if (isValidInputOfType("integer", input)) {
+                return Integer.parseInt(input);
+            }
+            else {
+                System.out.println("Please enter a valid number.");
+            }
+        } while(true);
     }
 
     // Gets the username and verifies that it is composed of legal characters.
@@ -74,31 +113,17 @@ public class Input {
     public String getUsername() {
         do {
             System.out.print("Please enter a username: ");
-            String input = getString();
-            if (isValidUsername(input)) {
+            String input = getInput();
+            if (isValidInputOfType("username", input)) {
                 return input;
             }
             else {
                 if (input.equals("quit") || input.equals("cancel") || input.equals("exit")) {
                     return "";
                 }
-                System.out.println("Invalid username.  Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
+                System.out.println("Invalid username.  Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols.");
             }
         } while (true);
-    }
-
-    // Parse user's input - must be a valid username
-    // Returns true if it is valid, false if it is not valid.
-    private static Boolean isValidUsername(String username) {
-        Pattern pattern = Pattern.compile("[^\\w_\\-.@]");
-        Matcher m = pattern.matcher(username);
-        boolean invalidCharacterPresent = m.find();
-
-        if (invalidCharacterPresent || username.length() < 8 || username.length() > 30) {
-            return false;
-        } else {
-            return true;
-        }
     }
 
     // Gets user's password and verifies it is composed of legal characters.
@@ -107,15 +132,14 @@ public class Input {
     public String getPassword() {
         do {
             System.out.print("Please enter a password: ");
-            String input = getString();
+            String input = getInput();
 
-            if (isValidPassword(input)) {
+            if (isValidInputOfType("password", input)) {
                 return input;
             }
-            System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
+            System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols.");
         } while(true);
     }
-
 
     // This is like the string method but only accepts checking type input (checking, savings)
     // Returns the account type (string).
@@ -125,7 +149,7 @@ public class Input {
             System.out.println("1. Checking account");
             System.out.println("2. Savings account");
             System.out.print("I want to open: ");
-            String text = getString();
+            String text = getInput();
 
             switch (text.toLowerCase()) {
                 case "checking":
@@ -153,13 +177,15 @@ public class Input {
             System.out.println("1. Yes");
             System.out.println("2. No");
             System.out.print("> ");
-            String input = getString();
+            String input = getInput();
 
             switch(input.toLowerCase()) {
                 case "yes":
+                case "y":
                 case "1":
                     return true;
                 case "no":
+                case "n":
                 case "2":
                     return false;
                 default:
@@ -168,58 +194,114 @@ public class Input {
         } while (true);
     }
 
-    // Parse user's input - must be a valid password
-    // Returns true if it is valid, false if it is not valid.
-    private Boolean isValidPassword(String password) {
-        // TODO: Check if this pattern is correct for passwords
-        //System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
-        // Should actually modify it so it accepts more symbols and checks if the phrase contains each?
-        // ex. (not working) [^\w_-.@!?;~#]
-        Pattern pattern = Pattern.compile("[^\\w_\\-.@]");
-        Matcher m = pattern.matcher(password);
-        boolean invalidCharacterPresent = m.find();
+    // Checks email input for a valid pattern - ex. *@*.* - and also requires verification of the email address (spelling).
+    // Returns the string (email) if valid, else it will return an empty string "".
+    public String getEmail() {
+        do {
+            System.out.print("Please enter your email address: ");
+            String input = getInput();
+            if (isValidInputOfType("email", input)) {
+                // Do a second check (confirming email address)
+                String emailRetyped = "";
+                do {
+                    System.out.print("Please re-enter your email address: ");
+                    emailRetyped = getInput();
+                    if (input.equals(emailRetyped)) {
+                        return input;
+                    }
+                    else {
+                        System.out.println("The email address you entered does not match what you already entered.");
+                    }
+                } while (true);
+            }
+            else {
+                System.out.println("Invalid e-mail address entered.  Please try again.");
+            }
+        } while (true);
+    }
 
-        if (invalidCharacterPresent || password.length() < 8 || password.length() > 50) {
-            return false;
-        } else {
+
+    // This is identical to what is in login, but maybe this version should be used instead.
+    // Checks whether a user entered input that meant cancelling out of the current menu.
+    // Returns a true if it finds something like cancel, false otherwise.
+    private Boolean userInitiatedCancel(String input) {
+        if (input.equals("quit") || input.equals("cancel") || input.equals("exit")) {
             return true;
+        }
+        else {
+            return false;
         }
     }
 
 
-
-    // (unused??) write a verifying method that takes a specified pattern and checks if the input is valid based on that.
-    /*
-    private Boolean checkIfValidCharacters(String type, String input) {
-        Pattern pattern;
+    // This is a helper method that checks for valid input for the various input types.
+    // Expects a "type" of input as well as the input itself (both strings)
+    // Returns T/F if the input is valid (or not)
+    private Boolean isValidInputOfType(String type, String input) {
+        Pattern pattern, pattern2 = null;
+        // pattern = Pattern.compile("");
         switch(type) {
             case "username": {
-                pattern = Pattern.compile("[^\\w_\\-.@]");
+                // ^[a-zA-Z0-9@~._-]{8,}$
+                // anything that passes this pattern is valid
+                pattern = Pattern.compile("^[a-zA-Z0-9@~._-]{8,}$");
+                //pattern = Pattern.compile("[^\\w_\\-.@]");
                 break;
             }
             case "password": {
-                pattern = Pattern.compile("[^\\w_!?#$'~,%;.@\\-^]");
+                // This checks for alphanumeric characters, some symbols, and checks if the string
+                // is between 8-50 characters long.
+                pattern = Pattern.compile("^[a-zA-Z0-9@^%$#/\\,;|~._-]{8,50}$");
                 break;
             }
             case "alphanumeric": {
-                pattern = Pattern.compile("[^\\w .,-]");
+                pattern = Pattern.compile("^[a-zA-Z0-9]$");
+                break;
+            }
+            case "email": {
+                pattern = Pattern.compile("^[a-zA-Z0-9._-]+@{1}[a-zA-Z0-9-_]+[.]{1}[a-zA-Z0-9]+[a-zA-Z_.-]*$");
+                // Anything that passes this pattern is valid
+                break;
+            }
+            case "integer": {
+                // ^[0-9]+$
+                pattern = Pattern.compile("^[0-9]+$");
+                break;
+            }
+            case "currency": {
+                // ^[$]?[0-9]+[.]?[0-9]+$
+                pattern = Pattern.compile("^[$]?[0-9]+[.]?[0-9]+$");
+                // Backup one that catches something like ".11": ^[$]?[.]?[0-9]+$
+                pattern2 = Pattern.compile("^[$]?[.]?[0-9]+$");
                 break;
             }
             // Only letters are allowed
+            case "name": {
+                pattern = Pattern.compile("^[a-zA-Z -]+$");
+                break;
+            }
+            case "string":
             case "letters":
             default: {
-                pattern = Pattern.compile("[^a-zA-Z]");
+                // ^[a-zA-Z]+$
+                pattern = Pattern.compile("^[a-zA-Z]+$");
             }
         }
 
         Matcher m = pattern.matcher(input);
-        boolean invalidCharacterPresent = m.find();
-        if (invalidCharacterPresent) {
-            return false;
+        Boolean isValidInput = m.find();
+        // This is a second check to see if the user entered ".99"
+        if (type.equals("currency") && !isValidInput) {
+            Matcher m2 = pattern2.matcher(input);
+            isValidInput = m2.find();
         }
-        else {
+
+        if (isValidInput) {
             return true;
         }
+        else {
+            return false;
+        }
     }
-    */
+
 }
