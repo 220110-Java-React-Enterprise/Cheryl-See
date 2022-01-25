@@ -1,7 +1,9 @@
 public class AccountModel {
     int accountId;
-    int customerId;
+    Double balance;
     String type;
+    // This data can be stored locally but really is populated from account_owners
+    // accountowner, accountowner2.name, etc
 
     public int getAccountId() {
         return accountId;
@@ -9,14 +11,6 @@ public class AccountModel {
 
     public void setAccountId(int accountId) {
         this.accountId = accountId;
-    }
-
-    public int getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
     }
 
     public String getType() {
@@ -34,6 +28,4 @@ public class AccountModel {
     public void setBalance(Double balance) {
         this.balance = balance;
     }
-
-    Double balance;
 }

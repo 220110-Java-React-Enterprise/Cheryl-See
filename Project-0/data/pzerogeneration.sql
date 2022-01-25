@@ -26,10 +26,16 @@ CREATE TABLE pzero.credential (
 
 CREATE TABLE pzero.account (
 	account_id INT PRIMARY KEY AUTO_INCREMENT,
-	customer_id INT,
 	balance DECIMAL (10, 2),
-	type VARCHAR(20),
-	CONSTRAINT customer_id_fk_acct FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
+	type VARCHAR(20)
+);
+
+CREATE TABLE pzero.account_owner (
+	owner_id INT PRIMARY KEY AUTO_INCREMENT,
+	account_id INT NOT NULL,
+	customer_id INT NOT NULL,
+	CONSTRAINT account_id_joint_fk FOREIGN KEY (account_id) REFERENCES account (account_id),
+	CONSTRAINT customer_id_joint_fk FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
 );
 
 
@@ -45,4 +51,6 @@ CREATE TABLE pzero.transaction (
 );
 
 ALTER TABLE pzero.customer ADD CONSTRAINT FOREIGN KEY (credential_id) REFERENCES credential (credential_id);
+
+# ALTER TABLE pzero.account ADD CONSTRAINT FOREIGN KEY (owners_id) REFERENCES joint_account (joint_account_id);
 

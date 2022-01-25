@@ -6,7 +6,6 @@ public class Main {
 
         if (customer != null) {
             System.out.println("Hello, " + customer.getFirstName() + "!\n");
-
             MainMenu menu = new MainMenu(customer);
             menu.doMenu();
         }

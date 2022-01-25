@@ -1,5 +1,6 @@
 import random
 
+
 def makeInsertAddressQuery():
     def getFirstName():
         names = [
@@ -88,7 +89,7 @@ def makeInsertAddressQuery():
         return randomNumber + " " + random.choice(streetNames)
 
     def getAddress2():
-        randomNumber = random.randint(1,10)
+        randomNumber = random.randint(1, 10)
         if randomNumber > 7:
             addresses = [
                 "Apt 1",
@@ -171,9 +172,13 @@ def makeInsertAddressQuery():
         return random.choice(state)
 
     def getZipCode():
-        return str(random.randint(11111,99999))
+        return str(random.randint(11111, 99999))
 
     def getEmail():
+        # Adding a case where the user may not have added an email address at all (and will be prompted when registering)
+        numHasNoEmail = random.randint(0, 10)
+        if (numHasNoEmail < 3):
+            return ""
         address = [
             "me",
             "someone",
@@ -219,15 +224,15 @@ def makeInsertAddressQuery():
         ]
 
         return random.choice(address) + "@" + random.choice(subdomain) + random.choice(domain)
-        firstName = getFirstName();
-    firstName = getFirstName();
-    lastName = getLastName();
-    address1 = getAddress1();
-    address2 = getAddress2();
-    city = getCity();
-    state = getState();
-    zipCode = getZipCode();
-    email = getEmail();
+
+    firstName = getFirstName()
+    lastName = getLastName()
+    address1 = getAddress1()
+    address2 = getAddress2()
+    city = getCity()
+    state = getState()
+    zipCode = getZipCode()
+    email = getEmail()
     if address2 == "None":
         query = f'INSERT INTO customer(first_name, last_name, address1, city, state, zip_code, email) VALUES ("{firstName}", "{lastName}", "{address1}", "{city}", "{state}", "{zipCode}", "{email}");'
     else:
@@ -236,22 +241,32 @@ def makeInsertAddressQuery():
 
 
 # Generates a query that creates fake bank accounts for users
-def makeInsertAccountsQuery(customer_id):
-
+def makeInsertAccountsQuery():
     # Decide on number of accounts the person has
     numAccounts = random.randint(0, 5)
 
-    # Get statement to insert that many and link it to that customer id
+    # Get statement to insert that many and link it to that owner id
     for i in range(1, numAccounts):
         dollar = random.randrange(0, 100000)
         cents = (random.randrange(0, 99) * 0.01)
         balance = dollar + cents
         type = random.choice(["checking", "savings"])
-        query = f'INSERT INTO account (customer_id, balance, type) VALUES ({customer_id}, {balance}, "{type}");'
+        query = f'INSERT INTO account (balance, type) VALUES ({balance}, "{type}");'
         print(query)
 
 
+def makeAccountOwnersQuery(account_id):
+    # At the minimum, each account will have one owner.
+    # The first 10 accounts can be joint accounts
+   # if account_id < 10:
+   # Very simplistic accounts for now
+    query = f'INSERT INTO account_owner (account_id, customer_id) VALUES ({account_id}, {account_id});'
+    print(query)
+
+
 if __name__ == "__main__":
-    for i in range (1,51):
+    totalCustomers = 10
+    for i in range(1, totalCustomers+1):
         makeInsertAddressQuery()
-        makeInsertAccountsQuery(i)
+        makeInsertAccountsQuery()
+        makeAccountOwnersQuery(i)

@@ -11,38 +11,43 @@ public class MainMenu {
             choice = getUserMenuSelection();
             switch(choice) {
                 case 1: {
-                    System.out.println("View account summary.");
+                    System.out.println("View account summary.\n");
                     account.printAllAccountData();
                     break;
                 }
                 case 2: {
-                    System.out.println("Deposit funds into an account.");
+                    System.out.println("Deposit funds into an account.\n");
                     account.deposit();
                     break;
                 }
                 case 3: {
-                    System.out.println("Withdraw funds from an account.");
+                    System.out.println("Withdraw funds from an account.\n");
                     account.withdraw();
                     break;
                 }
                 case 4: {
-                    System.out.println("Transfer funds from an account.");
+                    System.out.println("Transfer funds from an account.\n");
                     account.transfer();
                     break;
                 }
                 case 5: {
-                    System.out.println("View transaction history for a specified account.");
+                    System.out.println("View transaction history for a specified account.\n");
                     account.transactionHistory();
                     break;
                 }
                 case 6: {
+                    System.out.println("Create a new bank account.\n");
+                    account.createAccount();
+                    break;
+                }
+                case 7: {
                     // Alternatively could make this into returning to login screen
-                    System.out.println("Exiting program.  Have a nice day!");
+                    System.out.println("Exiting program.  Have a nice day!\n");
                     System.exit(0);
                     break;
                 }
             }
-        } while(choice != 6);
+        } while(choice != 7);
     }
 
     private Integer getUserMenuSelection() {
@@ -52,7 +57,8 @@ public class MainMenu {
         System.out.println("3. Withdraw funds from an account.");
         System.out.println("4. Transfer funds from one account to another.");
         System.out.println("5. View transaction history for a specific account.");
-        System.out.println("6. Exit program.");
+        System.out.println("6. Create a new bank account.");
+        System.out.println("7. Exit program.");
         System.out.print("Your selection: ");
         String choice = input.getString();
         return parseInput(choice);
@@ -61,6 +67,7 @@ public class MainMenu {
     // Takes string input and converts it to an integer (menu choice) using a list of predefined words.
     private Integer parseInput(String input) {
         // Checking for some common words in the login menu
+
         Hashtable<Integer, String[]> wordList = new Hashtable<Integer, String[]>(){};
 
         String[] wordList1 = new String[]{"view", "balance", "summary", "overview", "one", "1"};
@@ -68,7 +75,8 @@ public class MainMenu {
         String[] wordList3 = new String[]{"withdraw", "three", "3"};
         String[] wordList4 = new String[]{"transfer", "four", "4"};
         String[] wordList5 = new String[]{"transaction", "history", "transactions", "five", "5"};
-        String[] wordList6 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "six", "6"};
+        String[] wordList6 = new String[]{"create", "new", "six", "6"};
+        String[] wordList7 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "seven", "7"};
 
         wordList.put(1, wordList1);
         wordList.put(2, wordList2);
@@ -76,8 +84,9 @@ public class MainMenu {
         wordList.put(4, wordList4);
         wordList.put(5, wordList5);
         wordList.put(6, wordList6);
+        wordList.put(7, wordList7);
 
-        for(int i=1; i<=6; i++) {
+        for(int i=1; i<=7; i++) {
             String[] list = wordList.get(i);
             for (String word : list)
                 if (input.equals(word)) {

@@ -3,4 +3,4 @@
 *.iml
 .idea/
 .target/
-data/extraqueries.txt
+data/extraqueries.sql

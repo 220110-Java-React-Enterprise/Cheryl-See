@@ -6,6 +6,7 @@ public class Account {
     Input input;
     AccountRepo accountRepo = new AccountRepo();
     TransactionRepo transactionRepo = new TransactionRepo();
+    AccountOwnerRepo accountOwnerRepo = new AccountOwnerRepo();
     Integer customerId;
 
     // Withdraws money from an account.  Called after making a menu selection.
@@ -105,13 +106,14 @@ public class Account {
                 account.setBalance(newBalance);
                 TransactionModel transactionDeposit = new TransactionModel(account.getAccountId(), amount, "transfer", source, destination);
                 if (doTransaction(account, transactionDeposit)) {
-                    // Attempt the second transaction / account update
+                    // Attempt the second transaction entry / account update
                     AccountModel accountTransferredFrom = accountRepo.getAccountInformation(source);
                     newBalance = accountTransferredFrom.getBalance() - amount;
                     accountTransferredFrom.setBalance(newBalance);
                     // Get the absolute value for the "withdrawal" part
                     amount = 0 - amount;
-                    TransactionModel transactionWithdraw = new TransactionModel(accountTransferredFrom.getAccountId(), amount, "transfer", accountTransferredFrom.getAccountId(), account.getAccountId());
+                    // Make a new transaction w/ the inverted values (amount, destination, source)
+                    TransactionModel transactionWithdraw = new TransactionModel(accountTransferredFrom.getAccountId(), amount, "transfer", source, destination);
                     doTransaction(accountTransferredFrom, transactionWithdraw);
                     return true;
                 }
@@ -153,7 +155,7 @@ public class Account {
         }
 
         // Verify you have the correct amount
-        System.out.println("You are transferring $" + amount + ".");
+        System.out.printf("You are transferring $%.2f.%n", amount);
         System.out.println("To which account would you like to transfer your funds?");
         AccountModel accountDestination = promptUserForAccountSelection();
 
@@ -166,16 +168,17 @@ public class Account {
         System.out.println("From which account would you like to transfer your funds?");
         AccountModel accountSource = promptUserForAccountSelection();
 
+        // Check if user has cancelled transaction (in the source account)
+        if (accountSource == null) {
+            return;
+        }
+
         // User should not be able to transfer to and from the same account.
         while (accountSource.getAccountId() == accountDestination.getAccountId()) {
             System.out.println("Error: You cannot transfer to and from the same account.  Please select another destination account.");
             accountDestination = promptUserForAccountSelection();
         }
 
-        // Check if user has cancelled transaction
-        if (accountSource == null) {
-            return;
-        }
 
         // See if person has the funds for this transaction
         if (doesUserHaveFundsIn(accountSource, amount)) {
@@ -184,12 +187,12 @@ public class Account {
                 System.out.printf("You have transferred $%.2f.  Your account now has $%.2f.%n", amount,  accountDestination.getBalance());
             }
             else {
-                System.out.println("An error has occurred in doAccountBalanceUpdate().");
+                System.out.println("Error: An error has occurred in doAccountBalanceUpdate().");
             }
         }
         else {
             System.out.println("Sorry, you do not have the funds in this account to perform this transaction.");
-            System.out.printf("You currently have $%.2f and are trying to transfer $%.2f.%n", accountSource.getBalance(), amount);
+            System.out.printf("You currently have $%.2f in this account, and are trying to transfer $%.2f out of it.%n", accountSource.getBalance(), amount);
         }
     }
 
@@ -235,7 +238,61 @@ public class Account {
         System.out.println("AccountNumber\t\tAccount Type\t\tBalance");
         for (int i=0; i<list.size(); i++) {
             AccountModel account = list.get(i);
-            System.out.printf("%d\t\t\t\t%s\t\t\t\t\t%.2f%n", account.getAccountId(), capitalize(account.getType()), account.getBalance());
+            String tabs = "\t\t\t\t";
+            // Checking needs 3 tabs, while savings needs 4 for prettier formatting
+            if (account.getType().equals("checking")) {
+                tabs = "\t\t\t";
+            }
+            System.out.printf("%d\t\t\t\t\t%s%s%.2f%n", account.getAccountId(), capitalize(account.getType()), tabs, account.getBalance());
+        }
+    }
+
+
+    // Creates a new bank account (ex. user already has a customer ID / login credentials, and wants to open a new acct)
+    public void createAccount() {
+        // Prompt user for account type (checking, savings)
+        System.out.println("What type of account would you like to open? (Checking, savings)");
+        String accountType = input.getCheckingType();
+
+        System.out.print("How much would you like to deposit now? $");
+        Double initialDeposit = input.getCurrency();
+
+        // Check to see if a valid amount was entered
+        if (initialDeposit == -1) {
+            System.out.println("Only positive values are accepted.  Currency can only consist of numbers and a decimal.");
+            return;
+        }
+
+        System.out.printf("Creating a %s account with an initial deposit of $%.2f.%n", accountType, initialDeposit);
+
+        // Get the owners to send as parameters to the create() method
+        System.out.println("Would you like to add a second person to this account?");
+        Integer owner2 = -1;
+        if (input.getYesOrNo()) {
+            // TODO: stuff
+            // Locate second user and get their customerId
+            // Enter their full legal name?
+            // If customer does not exist, create an entry?
+            // Otherwise, locate their record and use that customerId
+            // owner2 = ??
+            System.out.println("Debug: Added second user.");
+        }
+
+        // Create Account
+        AccountModel newAccount = new AccountModel();
+        newAccount.setBalance(initialDeposit);
+        newAccount.setType(accountType);
+        Integer accountId = accountRepo.create(newAccount, customerId, owner2);
+
+        if (accountId != null) {
+            // Add a transaction indicating initial account creation / initial deposit
+            syncData();
+            TransactionModel transactionModel = new TransactionModel(accountId, initialDeposit, "deposit");
+            transactionRepo.addTransaction(transactionModel);
+            System.out.println("Your account has been created.");
+        }
+        else {
+            System.out.println("There was an error creating your account.  Account creation has been cancelled.");
         }
     }
 
@@ -249,24 +306,32 @@ public class Account {
             return;
         }
         CustomLinkedList<TransactionModel> transactions = transactionRepo.retrieveTransactions(account.getAccountId());
-        // test this - shouldn't be null
+
+        // Safety check - in case the transactions retrieval failed, this will prevent program from crashing
+        if (transactions == null) {
+            System.out.println("Some error occurred retrieving transactions.");
+            return;
+        }
         if (transactions.size() > 0) {
             // Iterate and print the transactions
-            //System.out.println("\nTransaction #\t\tDate\t\tType\t\tAmount\t\tSource\t\tDestination");
+            System.out.println("");
+
             for(int i=0; i<transactions.size(); i++) {
                 TransactionModel transaction = transactions.get(i);
+
                 String source = transaction.getSource().toString();
                 String destination = transaction.getDestination().toString();
 
+
                 switch(transaction.getType()) {
                     case "withdraw":
-                        System.out.printf("Transaction #%d: %s %s %.2f withdrawn from acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getType(), transaction.getAmount(), source);
+                        System.out.printf("Transaction #%d: %s %.2f withdrawn from acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getAmount(), source);
                         break;
                     case "deposit":
-                        System.out.printf("Transaction #%d: %s %s %.2f deposited to acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getType(), transaction.getAmount(), destination);
+                        System.out.printf("Transaction #%d: %s %.2f deposited to acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getAmount(), destination);
                         break;
                     case "transfer":
-                        System.out.printf("Transaction #%d: %s %s %.2f from acct #%s to acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getType(), transaction.getAmount(), source, destination);
+                        System.out.printf("Transaction #%d: %s %.2f transferred from acct #%s to acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getAmount(), source, destination);
                         break;
                     default:
                         System.out.printf("Transaction #%d: %s %s %.2f -- acct #%s to acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getType(), transaction.getAmount(), source, destination);
@@ -285,7 +350,7 @@ public class Account {
         // List the user's accounts as well as a "quit" choice
         for (int i=0; i<list.size()+1; i++) {
             if (i==list.size()) {
-                System.out.println(i + 1 + ". Cancel withdrawal.");
+                System.out.println(i + 1 + ". Cancel.");
             }
             else {
                 AccountModel acct = list.get(i);
@@ -294,6 +359,7 @@ public class Account {
         }
 
         // Prompt user for a menu (account) selection
+        System.out.print("Your selection: ");
         Integer accountIndex = (input.getInteger() - 1);
         if (accountIndex == list.size()) {
             System.out.println("Cancelling transaction.");
@@ -303,7 +369,7 @@ public class Account {
         else {
             // Verify account exists and retrieve data
             // Is it bad that this is pulling from the db instead of a local copy?
-            System.out.print("Your selection: ");
+
             Integer accountNumber = list.get(accountIndex).getAccountId();
             AccountModel account = accountRepo.getAccountInformation(accountNumber);
             if (account == null) {
