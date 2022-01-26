@@ -25,10 +25,10 @@ public class CredentialRepo {
             return null;
         }
     }
-/* TODO: Is this even used?
+
     // Retrieves a credential record based on the ID number.
-    // Intended to be used with new registrations
-    public CredentialModel getById(Integer id) {
+    // This would identify if a user tried to create a second login.
+    public CredentialModel getCredentialsByCustomerId(Integer id) {
         try {
             String sql = "SELECT * from credential WHERE customer_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -50,7 +50,8 @@ public class CredentialRepo {
         }
         return null;
     }
-*/
+
+
     // Retrieves a single credential record based on the username and password.
     // If the username and password do not match, then null is returned.
     // Intended to be used with existing registrations (ex. login attempt)
@@ -101,9 +102,6 @@ public class CredentialRepo {
         }
         return null;
     }
-
-    // Omitting update and delete methods for now
-
 
     // Constructor: Initialize the connection
     CredentialRepo() {

@@ -15,7 +15,7 @@ public class Login {
             // storing the User in a separate variable so 'null' forces it through login loop unless 'quit' selected
             switch (getUserMenuSelection()) {
                 case 1: {
-                    System.out.println("Existing user.");
+                    //System.out.println("Existing user.");
                     customer = getLoginCredentials();
                     if (customer != null) {
                         return customer;
@@ -23,7 +23,7 @@ public class Login {
                     break;
                 }
                 case 2: {
-                    System.out.println("New user.");
+                    //System.out.println("New user.");
                     customer = registerNewUser();
                     if (customer != null) {
                         return customer;
@@ -43,8 +43,10 @@ public class Login {
         } while (true);
     }
 
+    // Displays the main login menu and prompts the user to select a choice.
+    // Returns the selection in integer form.  Meant for use with doLogin().
     private Integer getUserMenuSelection() {
-        System.out.println("Do you have an online account already?");
+        System.out.println("\nDo you have an online account already?");
         System.out.println("1. Yes, I am an existing user.");
         System.out.println("2. No, I do not have an online account yet.");
         System.out.println("3. I would like to exit the program.");
@@ -60,28 +62,17 @@ public class Login {
         String[] wordList1 = new String[]{"existing", "returning", "login", "one", "1"};
         String[] wordList2 = new String[]{"new", "create", "register", "sign", "signup", "two", "2"};
         String[] wordList3 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "three", "3"};
-        for (String loginWord : wordList1) {
-            if (string.equals(loginWord)) {
-                return 1;
-            }
-        }
+        String[][] wordLists = new String[][]{wordList1, wordList2, wordList3};
 
-        for (String registerWord : wordList2) {
-            if (string.equals(registerWord)) {
-                return 2;
+        Integer selection = 1;
+        for (String[] list : wordLists) {
+            for (String word : list) {
+                if (string.equals(word)) {
+                    return selection;
+                }
             }
+            selection++;
         }
-
-        for (String quitWord : wordList3) {
-            if (string.equals(quitWord)) {
-                return 3;
-            }
-        }
-
-        //System.out.println("String input detected: returning placeholder value.");
-        // Decide on legal values for characters
-        // a-z, A-Z
-        // Some non-input was selected.
         return -1;
     }
 
@@ -91,7 +82,15 @@ public class Login {
     private CustomerModel getLoginCredentials() {
         for (int attempts=3; attempts > 0; attempts--) {
             String username = input.getUsername();
+            if (username == null) {
+                System.out.println("Cancelling login.");
+                return null;
+            }
             String password = input.getPassword();
+            if (password == null) {
+                System.out.println("Cancelling login.");
+                return null;
+            }
             //CredentialRepo credentialRepo = new CredentialRepo();
             CredentialModel credentials = credentialRepo.getByCredentials(username, password);
             // Credentialrepo generates a new credentials object and returns it, so check if has anything
@@ -115,20 +114,59 @@ public class Login {
     private CustomerModel registerNewUser() {
         System.out.println("Are you an existing customer and have your customer ID # on hand?");
         if (input.getYesOrNo()) {
-            // do lookup by id and register
+            // Customer has their ID number - do lookup by id and register
             System.out.println("Please enter your customer account number: ");
             Integer customerId = input.getInteger();
-            if (customerId >= 0) {
-                // Valid account number found, retrieving customer data
-                customer = customerRepo.getCustomerById(customerId);
-            }
-            else {
-                System.out.println("Sorry, we do not have a customer id by that number (" + customerId + ").");
+
+            // Lookup this id number and retrieve the CustomerModel record if it exists.
+            CustomerModel user = customerRepo.getCustomerById(customerId);
+            // A record was retrieved - see if it is the user
+            if (user != null) {
+                System.out.print("What is your first name?: ");
+                String firstName = input.getName();
+                System.out.print("What is your last name?: ");
+                String lastName = input.getName();
+
+                // User has matched their name correctly with the record / supplied customer ID
+                if (firstName.equals(user.getFirstName()) && lastName.equals(user.getLastName())) {
+                    // Check if the user already has login credentials
+                    setCustomer(user);
+                    if (user.getCredentialId() != null) {
+                        // User already has login credentials
+                        CredentialModel credentials = credentialRepo.getCredentialsByCustomerId(customerId);
+                        System.out.println("Hello, " + firstName + ", you already have a username and password.");
+                        System.out.println("Your username is: " + credentials.getUsername());
+                        return null;
+                    }
+                    // User has no login credentials, but customer record has been located
+                    else {
+                        // The user does not have login credentials yet, proceed with credential registration
+                        createCredentials();
+                        return customer;
+                    }
+                }
+                // User was unable to match personal data with what bank has for that customerId - proceed like new account
+                else {
+                    System.out.println("Sorry, your information does not match what is on record for that customer ID.");
+                    System.out.println("Please try again, or open a new account.");
+                    return null;
+                }
+            } else {
+                System.out.println("Sorry, we were unable to locate a customer with that ID number.");
+                System.out.println("Please try again, or open a new account.");
+                return null;
+                // Proceed to normal (bank account) registration
             }
         }
+        // User is either new to the bank or does not have the customer ID number.
         else {
-            // user needs a customer ID number
-            customer = createNewCustomerRecord();
+            CustomerModel newCustomer = new CustomerModel();
+            System.out.println("Let's create a new customer record for you.");
+            newCustomer.createNewCustomerRecord();
+            Integer customerId = customerRepo.addNewCustomer(newCustomer);
+            newCustomer.setCustomerId(customerId);
+            this.setCustomer(newCustomer);
+            System.out.println("You have been registered as a customer.  Your customer ID# is " + customerId);
         }
 
         // Checking if error occurred or user wanted to cancel
@@ -136,83 +174,68 @@ public class Login {
             return null;
         }
 
-        for (int i=0; i<3; i++) {
-            System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
-            String username = input.getUsername();
-
-            if (userInitiatedCancel(username)) {
-                return null;
-            }
-            System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
-            String password = input.getPassword();
-
-            if (userInitiatedCancel(password)) {
-                return null;
-            }
-
-            // Get the user's email address if there is none on record?  Or force entry now?
-            //String email = input.getEmail();
-
-            // Customer data has been located, add their credentials to the database
-            credentials = new CredentialModel(customer.getCustomerId(), username, password);
-            Integer newCredentialId = credentialRepo.register(credentials);
-
-            if (newCredentialId != null) {
-                Boolean success = customerRepo.addNewCredentials(customer.getCustomerId(), newCredentialId);
-                // could add another check here based on success
-                // also update the customer's email address with what was just entered - not sure if needed, or check if null
-                customerRepo.addEmailAddress(email, customer.getCustomerId());
-                return customer;
-            }
-            else {
-                System.out.println("Error: Some error occurred when adding credentials.");
-                return null;
-            }
-        }
-
-        // User was unable to register for some reason/ too many invalid attempts
-        System.out.println("Registration cancelled.");
-        return null;
+        // Prompts the user to create login credentials (reference saved to Login.credentials)
+        createCredentials();
+        return customer;
     }
 
 
-    // This is to create a brand new customer record (ex. joint account, registration)
-    // It prompts the user for basic details (just the name for simplicity) and returns a CustomerModel w/ info.
-    private CustomerModel createNewCustomerRecord() {
-        System.out.println("Let's create a new customer record for you.");
+    // Prompts user for their username, password, and an email address.
+    // Creates a CredentialModel and assigns it to Login.credentials
+    // Should only be called once Login.customer has been populated
+    private void createCredentials() {
+        if (customer == null) {
+            System.out.println("Error: Do not user createCredentials() without retrieving/creating customer information first.");
+        }
+        System.out.println("Creating new login credentials.");
+        System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
+        String username = input.getUsername();
 
-        System.out.print("What is your first name?: ");
-        String firstName = input.getName();
-        // User cancelled process
-        if (firstName == null) {
-            return null;
+        if (username == null) {
+            System.out.println("Cancelling registration.");
+            return;
         }
 
-        System.out.print("What is your last name?: ");
-        String lastName = input.getName();
-        // User cancelled process
-        if (lastName == null) {
-            return null;
+        // Check if username is already in use
+        while (credentialRepo.usernameIsInUse(username)) {
+            System.out.println("Sorry, this username is already in use.  Please select another username.");
+            username = input.getUsername();
+            if (username == null) {
+                System.out.println("Cancelling registration.");
+                return;
+            }
         }
 
-        String email = input.getEmail();
+        System.out.println("Passwords must be between 8 to 50 characters in length and can only consist of alphanumeric characters and some symbols (. _-@!?;~#)");
+        String password = input.getPassword();
 
-        CustomerModel newCustomer = new CustomerModel(firstName, lastName, email);
-        Integer customerId = customerRepo.addNewCustomer(newCustomer);
-        newCustomer.setCustomerId(customerId);
-        return newCustomer;
-    }
+        if (input.userInitiatedCancel(password)) {
+            return;
+        }
 
+        // Get the user's email address if there is none on record
+        if (customer.getEmail() == null) {
+            customer.setEmail(input.getEmail());
+            customerRepo.addEmailAddress(customer);
+        }
 
-    // Checks whether a user entered input that meant cancelling out of the current menu.
-    // Returns a true if it finds something like cancel, false otherwise.
-    private Boolean userInitiatedCancel(String input) {
-        if (input.equals("quit") || input.equals("cancel") || input.equals("exit")) {
-            return true;
+        // Set login credentials
+        // Customer data has been located, add their credentials to the database
+        credentials = new CredentialModel(customer.getCustomerId(), username, password);
+        Integer newCredentialId = credentialRepo.register(credentials);
+
+        if (newCredentialId != null) {
+            Boolean success = customerRepo.addNewCredentials(customer.getCustomerId(), newCredentialId);
+            return;
         }
         else {
-            return false;
+            System.out.println("Error: Some error occurred when adding credentials.");
+            return;
         }
+    }
+
+    public void setCustomer(CustomerModel customer) {
+        this.customer = customer;
     }
 
     Login() {
@@ -221,4 +244,5 @@ public class Login {
         this.credentialRepo = new CredentialRepo();
     }
 }
+
 

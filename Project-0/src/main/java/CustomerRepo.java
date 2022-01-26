@@ -27,6 +27,8 @@ public class CustomerRepo {
     }
 
     // Retrieves customer info based on credential ID (user has just logged in successfully)
+    // Also used for new registrations (if the person provides their customer ID).
+    // Returns null if the customer_id is not found.
     public CustomerModel getCustomerById(int customerId) {
         try {
             String sql = "SELECT * FROM customer WHERE customer_id = ?";
@@ -44,6 +46,7 @@ public class CustomerRepo {
                 model.setState(result.getString("state"));
                 model.setZipCode(result.getString("zip_code"));
                 model.setEmail(result.getString("email"));
+                model.setCredentialId(result.getInt("credential_id"));
             }
             return model;
         }
@@ -54,7 +57,7 @@ public class CustomerRepo {
     }
 
     // We aren't creating new customers, but we are modifying existing customers' records (create login).
-    // This is an update method
+    // This is an update method on customer.credential_id.
     public Boolean addNewCredentials(int customerId, int credentialId) {
         // Retrieve customer data by customer Id
         try {
@@ -72,13 +75,13 @@ public class CustomerRepo {
     }
 
     // This sets the customer's email address (ex. they created a new login)
-    public Boolean addEmailAddress(String email, Integer customerId) {
+    public Boolean addEmailAddress(CustomerModel model) {
         // Retrieve customer data by customer Id
         try {
             String sql = "UPDATE customer SET email = ? WHERE customer_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, email);
-            statement.setInt(2, customerId);
+            statement.setString(1, model.getEmail());
+            statement.setInt(2, model.getCustomerId());
             statement.executeUpdate();
             return true;
         }
@@ -88,6 +91,36 @@ public class CustomerRepo {
         return false;
     }
 
+    // Searches the customer data to see if a customer already exists (just searching by first/last name)
+    // Returns the record (CustomerModel) if found, else it returns null.
+    public CustomerModel searchByName(String firstName, String lastName) {
+        try {
+            String sql = "SELECT * FROM customer WHERE first_name=? AND last_name=?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, firstName);
+            statement.setString(2, lastName);
+            ResultSet result = statement.executeQuery();
+
+            CustomerModel model = new CustomerModel();
+            while(result.next()) {
+                model.setFirstName(result.getString("first_name"));
+                model.setLastName(result.getString("last_name"));
+                model.setAddress1(result.getString("address1"));
+                model.setAddress2(result.getString("address2"));
+                model.setCity(result.getString("city"));
+                model.setState(result.getString("state"));
+                model.setZipCode(result.getString("zip_code"));
+                model.setEmail(result.getString("email"));
+                model.setCredentialId(result.getInt("credential_id"));
+                model.setCustomerId(result.getInt("customer_id"));
+            }
+            return model;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     CustomerRepo() {
         this.connection = ConnectionManager.getConnection();

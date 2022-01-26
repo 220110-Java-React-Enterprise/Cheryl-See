@@ -1,4 +1,5 @@
-import java.util.Hashtable;
+
+// This class handles the main loop after logging in and selects an action (primarily Account-related).
 
 public class MainMenu {
     CustomerModel customer;
@@ -65,11 +66,8 @@ public class MainMenu {
     }
 
     // Takes string input and converts it to an integer (menu choice) using a list of predefined words.
+    // This helps check for some possible words (instead of numerical input) used in the main menu.
     private Integer parseInput(String input) {
-        // Checking for some common words in the login menu
-
-        Hashtable<Integer, String[]> wordList = new Hashtable<Integer, String[]>(){};
-
         String[] wordList1 = new String[]{"view", "balance", "summary", "overview", "one", "1"};
         String[] wordList2 = new String[]{"deposit", "two", "2"};
         String[] wordList3 = new String[]{"withdraw", "three", "3"};
@@ -77,25 +75,19 @@ public class MainMenu {
         String[] wordList5 = new String[]{"transaction", "history", "transactions", "five", "5"};
         String[] wordList6 = new String[]{"create", "new", "six", "6"};
         String[] wordList7 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "seven", "7"};
+        String[][] wordLists = new String[][]{wordList1, wordList2, wordList3, wordList4, wordList5, wordList6, wordList7};
+        Integer selection = 1;
 
-        wordList.put(1, wordList1);
-        wordList.put(2, wordList2);
-        wordList.put(3, wordList3);
-        wordList.put(4, wordList4);
-        wordList.put(5, wordList5);
-        wordList.put(6, wordList6);
-        wordList.put(7, wordList7);
-
-        for(int i=1; i<=7; i++) {
-            String[] list = wordList.get(i);
-            for (String word : list)
+        for (String[] list : wordLists) {
+            for (String word : list) {
                 if (input.equals(word)) {
-                    return i;
+                    return selection;
                 }
+            }
+            selection++;
         }
 
         System.out.println("Debug: Didn't find menu choice in wordlist.");
-        // Some non-input was selected.
         return -1;
     }
 

@@ -7,7 +7,7 @@ public class Account {
     CustomerRepo customerRepo = new CustomerRepo();
     AccountRepo accountRepo = new AccountRepo();
     TransactionRepo transactionRepo = new TransactionRepo();
-    AccountOwnerRepo accountOwnerRepo = new AccountOwnerRepo();
+    //AccountOwnerRepo accountOwnerRepo = new AccountOwnerRepo();
     Integer customerId;
 
     // Withdraws money from an account.  Called after making a menu selection.
@@ -55,7 +55,7 @@ public class Account {
     // Returns a boolean if true (able to do so) or false if there is not enough funds.
     private Boolean doesUserHaveFundsIn(AccountModel account, Double amount) {
         Double currentBalance = account.getBalance();
-        if (currentBalance - amount <= 0) {
+        if (currentBalance - amount < 0) {
             return false;
         }
 
@@ -146,6 +146,12 @@ public class Account {
 
     // Transfers money from an account
     public void transfer() {
+        // if user only has one / no account, they can't do a transfer
+        if (list.size() <= 1) {
+            System.out.println("You need at least two accounts to perform a transfer.");
+            return;
+        }
+
         // Get the amount to transfer
         System.out.print("How much would you like to transfer? $");
         Double amount = input.getCurrency();
@@ -244,17 +250,14 @@ public class Account {
             if (account.getType().equals("checking")) {
                 tabs = "\t\t\t";
             }
-            System.out.printf("%d\t\t\t\t\t%s%s%.2f%n", account.getAccountId(), capitalize(account.getType()), tabs, account.getBalance());
+            System.out.printf("%d\t\t\t\t\t%s%s%.2f%n", account.getAccountId(), input.capitalize(account.getType()), tabs, account.getBalance());
         }
     }
 
 
     // Creates a new bank account (ex. user already has a customer ID / login credentials, and wants to open a new acct)
     public void createAccount() {
-        // Prompt user for account type (checking, savings)
-        //System.out.println("What type of account would you like to open? (Checking, savings)");
         String accountType = input.getCheckingType();
-
         System.out.print("How much would you like to deposit now? $");
         Double initialDeposit = input.getCurrency();
 
@@ -268,36 +271,60 @@ public class Account {
 
         // Get the owners to send as parameters to the create() method
         System.out.println("Would you like to add a second person to this account?");
-        Integer owner2 = -1;
+        Integer owner2Id = -1;
         if (input.getYesOrNo()) {
             // Simplifying this by simply adding a second name (rather than looking up the user ID, etc.)
             System.out.println("What is the name of the second user?");
             System.out.print("First name: ");
             String firstName = input.getName();
+            if (firstName == null) {
+                return;
+            }
             System.out.print("Last name: ");
             String lastName = input.getName();
+            if (lastName == null) {
+                return;
+            }
 
             System.out.println("You are adding " + firstName + " " + lastName + " to the account.");
             System.out.println("Is this correct?");
+
+            // User indicated that something was misspelled or similar
             while (!input.getYesOrNo()) {
                 System.out.println("What is the name of the second user?");
                 System.out.print("First name: ");
                 firstName = input.getName();
+                if (firstName == null) {
+                    return;
+                }
                 System.out.print("Last name: ");
                 lastName = input.getName();
+                if (lastName == null) {
+                    return;
+                }
             }
 
-            // Creating a new customer entry for this user
-            CustomerModel customerModel = new CustomerModel(firstName, lastName);
-            // Pass new customerId (owner2) to constructor where it will add an additional AccountOwner record
-            owner2 = customerRepo.addNewCustomer(customerModel);
+            // Search to see if customer already exists (search by name)
+            // Obviously, in real life we would use more unique/personal information than first/last name to
+            // confirm, but that will quickly get out of scope for the project.
+            CustomerModel secondOwner = customerRepo.searchByName(firstName, lastName);
+            if (secondOwner == null) {
+                // This name was not found in the list of existing customers, so a new record should be made
+                secondOwner = new CustomerModel(firstName, lastName);
+                owner2Id = customerRepo.addNewCustomer(secondOwner);
+            }
+            else {
+                owner2Id = secondOwner.getCustomerId();
+            }
+            System.out.println("Second owner id: " + owner2Id);
+            // At this point, the second user's information should be correct.
         }
 
         // Create Account
         AccountModel newAccount = new AccountModel();
         newAccount.setBalance(initialDeposit);
         newAccount.setType(accountType);
-        Integer accountId = accountRepo.create(newAccount, customerId, owner2);
+        Integer accountId = accountRepo.create(newAccount, customerId, owner2Id);
 
         if (accountId != null) {
             // Add a transaction indicating initial account creation / initial deposit
@@ -371,7 +398,7 @@ public class Account {
             }
             else {
                 AccountModel acct = list.get(i);
-                System.out.printf("%d.#%d - %s ($%.2f)%n", i+1, acct.getAccountId(), capitalize(acct.getType()), acct.getBalance());
+                System.out.printf("%d.#%d - %s ($%.2f)%n", i+1, acct.getAccountId(), input.capitalize(acct.getType()), acct.getBalance());
             }
         }
 
@@ -383,10 +410,8 @@ public class Account {
             return null;
         }
 
+        // Verify account exists and retrieve data
         else {
-            // Verify account exists and retrieve data
-            // Is it bad that this is pulling from the db instead of a local copy?
-
             Integer accountNumber = list.get(accountIndex).getAccountId();
             AccountModel account = accountRepo.getAccountInformation(accountNumber);
             if (account == null) {
@@ -402,23 +427,22 @@ public class Account {
 
     // Primarily for use with the account types, but really anything
     // Accepts a string, returns a Capitalized version of the string.
-    public String capitalize(String text) {
+    public String _capitalize(String text) {
         // Capitalize the first letter of the string
         String result = text.substring(0,1).toUpperCase();
-        // Attatch the rest of the string (lower case)
+        // Attach the rest of the string (lower case)
         result += text.substring(1);
         return result;
     }
 
     // To prevent the local copy of data from getting out of sync with the database,
     // This method re-initializes list (of accounts) from the database.
-    // Being more careful would avoid this problem, but the database should be authoritative anyways.
+    // Being more careful would avoid this problem, but the database should be authoritative anyway.
     private void syncData() {
         list = accountRepo.getAccounts(customerId);
     }
 
     Account(int customerId) {
-        // retrieve the customer's accounts
         AccountRepo accountRepo = new AccountRepo();
         this.list = accountRepo.getAccounts(customerId);
         this.input = Input.getInputReference();

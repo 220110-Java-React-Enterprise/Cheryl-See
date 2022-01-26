@@ -1,16 +1,12 @@
+import javax.sound.midi.Soundbank;
+
 public class CredentialModel {
-    int credentialId; // This can be null - probably not used, just serving as a PK
-    int customerId;
+    Integer credentialId; // This can be null - probably not used, just serving as a PK
+    Integer customerId;
     String username;
     String password;
 
-    /*
-    CredentialModel(int customerId) {
-        this.customerId = customerId;
-        // Not sure where or if this will be used yet
-    } */
-
-    CredentialModel(int customerId, String username, String password) {
+    CredentialModel(Integer customerId, String username, String password) {
         this.customerId = customerId;
         this.username = username;
         this.password = password;
@@ -36,19 +32,19 @@ public class CredentialModel {
         this.password = password;
     }
 
-    public int getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 
-    public int getCredentialId() {
+    public Integer getCredentialId() {
         return credentialId;
     }
 
-    public void setCredentialId(int id) {
+    public void setCredentialId(Integer id) {
         this.credentialId = id;
     }
 }

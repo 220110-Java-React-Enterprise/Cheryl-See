@@ -1,15 +1,14 @@
 public class CustomerModel {
-    int customerId;
-    int credentialId;   // Can be null until person registers for an account
-    // The following is going to be populated from the database
+    Integer customerId;
+    Integer credentialId;   // This can be null until person registers for an account
     private String firstName;
     private String lastName;
+    // The following is going to be populated from the database / mostly fluff details
     private String address1;
     private String address2;
     private String city;
     private String state;
     private String zipCode;
-    private CustomLinkedList<AccountModel> accounts;
 
     public String getEmail() {
         return email;
@@ -21,15 +20,15 @@ public class CustomerModel {
 
     private String email;
 
-    public int getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 
-    public int getCredentialId() {
+    public Integer getCredentialId() {
         return credentialId;
     }
 
@@ -98,17 +97,37 @@ public class CustomerModel {
         this.customerId = customerId;
     }
 
-    // This is used during joint account - new CustomerModel being added
+    // This is to create a brand-new customer record (ex. joint account, registration)
+    // It prompts the user for basic details (just the name for simplicity) and returns a CustomerModel w/ info.
+    // It's currently used by login (new bank customers) though it is very similar to what is used for joint acct users
+    public void createNewCustomerRecord() {
+        System.out.print("What is your first name?: ");
+        Input input = Input.getInputReference();
+        String firstName = input.getName();
+        // User cancelled process
+        if (firstName == null) {
+            return;
+        }
+
+        System.out.print("What is your last name?: ");
+        String lastName = input.getName();
+        // User cancelled process
+        if (lastName == null) {
+            return;
+        }
+
+        String email = input.getEmail();
+        this.setFirstName(firstName);
+        this.setLastName(lastName);
+        this.setEmail(email);
+    }
+
+    // This is used during new registration - new CustomerModel being added
     CustomerModel(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
-
-    // This is used during new registration - new CustomerModel being added
-    CustomerModel(String firstName, String lastName, String email) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-    }
+    // Used when creating new credentials
+    CustomerModel() {}
 }

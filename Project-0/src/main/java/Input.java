@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 // This class handles all the input and most of the validation.  Most functions either return
 // null or -1 if bad input is detected, though some loop and force re-entry until satisfied.
 // Those typically include accepting "cancel" or "quit" to exit the loop.
+// There are also a few input-related helper methods.
 
 public class Input {
     private static Input input;
@@ -20,7 +21,6 @@ public class Input {
         return input;
     }
     private Input(){}
-
 
     // Making this a helper function because apparently I don't like using the scanner.
     // Gets input (not validated) and returns the string.
@@ -41,7 +41,7 @@ public class Input {
     }
 
 
-    // Similar to getString, this gets a user's name, validates that it is only letters and returns a string.
+    // Similar to getString, this gets a user's name, validates that it is only letters and returns a capitalized string.
     // Intended for use with registration / new customer record.
     public String getName() {
         do {
@@ -53,11 +53,7 @@ public class Input {
                 return null;
             }
             if (isValidInputOfType("name", name)) {
-                // Capitalize the first letter of the string and make the rest lower case
-                String result = name.substring(0,1).toUpperCase();
-                // Attach the rest of the string (lower case)
-                result += name.substring(1).toLowerCase();
-                return result;
+                return capitalize(name);
             }
             else {
                 System.out.println("Invalid characters detected.  Please try again.");
@@ -109,7 +105,7 @@ public class Input {
 
     // Gets the username and verifies that it is composed of legal characters.
     // If it is invalid for some reason, it will inform the user of the username rules.
-    // Not displayed, but the user can also enter quit, exit or cancel to leave this loop.
+    // Not displayed, but the user can also enter quit, exit or cancel to leave this loop. (null is returned)
     public String getUsername() {
         do {
             System.out.print("Please enter a username: ");
@@ -118,7 +114,7 @@ public class Input {
                 return input;
             }
             else {
-                if (input.equals("quit") || input.equals("cancel") || input.equals("exit")) {
+                if (userInitiatedCancel(input)) {
                     return "";
                 }
                 System.out.println("Invalid username.  Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols.");
@@ -224,7 +220,7 @@ public class Input {
     // This is identical to what is in login, but maybe this version should be used instead.
     // Checks whether a user entered input that meant cancelling out of the current menu.
     // Returns a true if it finds something like cancel, false otherwise.
-    private Boolean userInitiatedCancel(String input) {
+    public Boolean userInitiatedCancel(String input) {
         if (input.equals("quit") || input.equals("cancel") || input.equals("exit")) {
             return true;
         }
@@ -232,7 +228,6 @@ public class Input {
             return false;
         }
     }
-
 
     // This is a helper method that checks for valid input for the various input types.
     // Expects a "type" of input as well as the input itself (both strings)
@@ -242,36 +237,28 @@ public class Input {
         // pattern = Pattern.compile("");
         switch(type) {
             case "username": {
-                // ^[a-zA-Z0-9@~._-]{8,}$
-                // anything that passes this pattern is valid
                 pattern = Pattern.compile("^[a-zA-Z0-9@~._-]{8,}$");
-                //pattern = Pattern.compile("[^\\w_\\-.@]");
                 break;
             }
             case "password": {
-                // This checks for alphanumeric characters, some symbols, and checks if the string
-                // is between 8-50 characters long.
                 pattern = Pattern.compile("^[a-zA-Z0-9@^%$#/\\,;|~._-]{8,50}$");
                 break;
             }
             case "alphanumeric": {
-                pattern = Pattern.compile("^[a-zA-Z0-9]$");
+                pattern = Pattern.compile("^[a-zA-Z0-9]+$");
                 break;
             }
             case "email": {
                 pattern = Pattern.compile("^[a-zA-Z0-9._-]+@{1}[a-zA-Z0-9-_]+[.]{1}[a-zA-Z0-9]+[a-zA-Z_.-]*$");
-                // Anything that passes this pattern is valid
                 break;
             }
             case "integer": {
-                // ^[0-9]+$
                 pattern = Pattern.compile("^[0-9]+$");
                 break;
             }
             case "currency": {
-                // ^[$]?[0-9]+[.]?[0-9]+$
                 pattern = Pattern.compile("^[$]?[0-9]+[.]?[0-9]+$");
-                // Backup one that catches something like ".11": ^[$]?[.]?[0-9]+$
+                // Backup one that catches something like ".11":
                 pattern2 = Pattern.compile("^[$]?[.]?[0-9]+$");
                 break;
             }
@@ -283,7 +270,6 @@ public class Input {
             case "string":
             case "letters":
             default: {
-                // ^[a-zA-Z]+$
                 pattern = Pattern.compile("^[a-zA-Z]+$");
             }
         }
@@ -304,4 +290,13 @@ public class Input {
         }
     }
 
+    // Helper method which accepts a string, returns a capitalized + lower cased version of the string.
+    // Intended for use in proper names, etc.
+    public String capitalize(String text) {
+        // Capitalize the first letter of the string
+        String result = text.substring(0,1).toUpperCase();
+        // Attach the rest of the string (lower case)
+        result += text.substring(1);
+        return result;
+    }
 }

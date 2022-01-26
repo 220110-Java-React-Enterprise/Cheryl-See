@@ -27,9 +27,7 @@ public class AccountRepo {
             owner1.setCustomerId(owner1Id);
             AccountOwnerRepo accountOwnersRepo = new AccountOwnerRepo();
             Boolean addOwnerResult1 = accountOwnersRepo.addAccountOwnerEntry(owner1);
-            System.out.println("Debug: adding owner result: " + addOwnerResult1);
 
-            // TODO: implement this (gotta look up second user)
             // This is a joint account with a second owner, so another entry is needed
             if (owner2Id > 0) {
                 AccountOwnerModel owner2 = new AccountOwnerModel();
