@@ -316,7 +316,7 @@ public class Account {
             else {
                 owner2Id = secondOwner.getCustomerId();
             }
-            System.out.println("Second owner id: " + owner2Id);
+            System.out.println(secondOwner.getFirstName() + " " + secondOwner.getLastName() + ", with ID# " + secondOwner.getCustomerId() + " will be added to the account as well.");
             // At this point, the second user's information should be correct.
         }
 

@@ -29,7 +29,8 @@ public class Login {
                 }
                 case 3: {
                     System.out.println("Exiting program.  Have a nice day!");
-                    return null;
+                    System.exit(0);
+                    break;
                 }
                 default: {
                     System.out.println("Error: Not a valid option.");
