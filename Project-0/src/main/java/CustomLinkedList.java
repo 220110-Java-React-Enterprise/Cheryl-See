@@ -51,14 +51,6 @@ public class CustomLinkedList<T> implements CustomListInterface<T>, Iterable<T>{
             nodeBeingChecked = nodeBeingChecked.next;
         }
 
-        // Cases to handle
-        // Adding to head (index 0)
-        // Adding to tail
-        // Adding to middle
-        // Adding to empty list
-        // Adding to index that is out of bounds (too large, neg number)
-        // Attempting to add incorrect type (stretch goal)
-
         // Figure out how to throw exception more gracefully
         // it should not reach this point if it has been inserted
         throw new IndexOutOfBoundsException("Requested index is out of bounds.");
@@ -158,20 +150,6 @@ public class CustomLinkedList<T> implements CustomListInterface<T>, Iterable<T>{
             }// Node not found, iterate again
             nodeBeingChecked = nodeBeingChecked.next;
         }
-
-        // Cases to handle
-        // Adding to head (index 0)
-        // Adding to tail
-        // Adding to middle
-        // Adding to empty list
-        // Adding to index that is out of bounds (too large, neg number)
-        // Attempting to add incorrect type (stretch goal)
-
-
-        // Figure out how to throw exception more gracefully
-        // it should not reach this point if it has been removed
-        //throw new IndexOutOfBoundsException("Requested index is out of bounds.");
-        // is this even needed? if it didn't exist, it's been removed?
     }
 
 
@@ -315,28 +293,4 @@ public class CustomLinkedList<T> implements CustomListInterface<T>, Iterable<T>{
         }
         System.out.println("]");
     }
-
-
-    // A sequence of tests to test .remove()
-    public void testRemoval() {
-        /*
-        for(int i=1; i<11; i++) {
-            list.add(i);
-        }
-        list.remove(4);
-        System.out.println("#4 removed");
-        System.out.println("size -1: " + list.size());
-        list.remove(0);
-        System.out.println("#0 removed");
-        System.out.println("size -1 (head removed): " + list.size());
-
-        System.out.println("\nFinal result:");
-        for(int i=0; i<list.size(); i++) {
-            System.out.println(list.get(i));
-        }
-        */
-
-    }
-
-
 }

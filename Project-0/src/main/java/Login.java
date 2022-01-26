@@ -12,10 +12,8 @@ public class Login {
     // When complete it returns the customer's data.
     public CustomerModel doLogin() {
         do {
-            // storing the User in a separate variable so 'null' forces it through login loop unless 'quit' selected
             switch (getUserMenuSelection()) {
                 case 1: {
-                    //System.out.println("Existing user.");
                     customer = getLoginCredentials();
                     if (customer != null) {
                         return customer;
@@ -23,7 +21,6 @@ public class Login {
                     break;
                 }
                 case 2: {
-                    //System.out.println("New user.");
                     customer = registerNewUser();
                     if (customer != null) {
                         return customer;
@@ -34,7 +31,6 @@ public class Login {
                     System.out.println("Exiting program.  Have a nice day!");
                     return null;
                 }
-
                 default: {
                     System.out.println("Error: Not a valid option.");
                     break;
@@ -61,7 +57,7 @@ public class Login {
         // Checking for some common words in the login menu
         String[] wordList1 = new String[]{"existing", "returning", "login", "one", "1"};
         String[] wordList2 = new String[]{"new", "create", "register", "sign", "signup", "two", "2"};
-        String[] wordList3 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "three", "3"};
+        String[] wordList3 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "sign out", "logoff", "logout", "escape", "three", "3"};
         String[][] wordLists = new String[][]{wordList1, wordList2, wordList3};
 
         Integer selection = 1;
@@ -91,12 +87,10 @@ public class Login {
                 System.out.println("Cancelling login.");
                 return null;
             }
-            //CredentialRepo credentialRepo = new CredentialRepo();
             CredentialModel credentials = credentialRepo.getByCredentials(username, password);
-            // Credentialrepo generates a new credentials object and returns it, so check if has anything
 
+            // If credentials has a nonnull value, it means the user entered the correct username/password.
             if (credentials != null) {
-                //CustomerRepo customerRepo = new CustomerRepo();
                 CustomerModel customer = customerRepo.getCustomerById(credentials.getCustomerId());
                 // final check just to make sure customer exists, even though it should
                 if (customer != null) {
@@ -110,7 +104,7 @@ public class Login {
 
     // Prompts the user for a customer ID, username, and password and saves their credentials.
     // Returns the customer's data if found; else it returns null and the user will go through the login again.
-    // This attempts the registration process three times before returning to the login menu.
+    // Returns null if the user should not be registering (already has a login, cancelled, etc.)
     private CustomerModel registerNewUser() {
         System.out.println("Are you an existing customer and have your customer ID # on hand?");
         if (input.getYesOrNo()) {
@@ -120,6 +114,7 @@ public class Login {
 
             // Lookup this id number and retrieve the CustomerModel record if it exists.
             CustomerModel user = customerRepo.getCustomerById(customerId);
+
             // A record was retrieved - see if it is the user
             if (user != null) {
                 System.out.print("What is your first name?: ");
@@ -131,16 +126,17 @@ public class Login {
                 if (firstName.equals(user.getFirstName()) && lastName.equals(user.getLastName())) {
                     // Check if the user already has login credentials
                     setCustomer(user);
-                    if (user.getCredentialId() != null) {
-                        // User already has login credentials
+                    // All credential IDs will be a positive nonzero number.
+                    // For some reason the db seems to be returning 0 instead of null. (for nonexistence)
+                    if (user.getCredentialId() != null && user.getCredentialId() > 0) {
+                        // User already has login credentials - inform the user and exit registration
                         CredentialModel credentials = credentialRepo.getCredentialsByCustomerId(customerId);
                         System.out.println("Hello, " + firstName + ", you already have a username and password.");
                         System.out.println("Your username is: " + credentials.getUsername());
                         return null;
                     }
-                    // User has no login credentials, but customer record has been located
+                    // User has no login credentials, but customer record has been located - allow them to register
                     else {
-                        // The user does not have login credentials yet, proceed with credential registration
                         createCredentials();
                         return customer;
                     }
@@ -153,9 +149,8 @@ public class Login {
                 }
             } else {
                 System.out.println("Sorry, we were unable to locate a customer with that ID number.");
-                System.out.println("Please try again, or open a new account.");
+                System.out.println("Please try again, or register without an ID number.");
                 return null;
-                // Proceed to normal (bank account) registration
             }
         }
         // User is either new to the bank or does not have the customer ID number.
@@ -179,7 +174,6 @@ public class Login {
         return customer;
     }
 
-
     // Prompts user for their username, password, and an email address.
     // Creates a CredentialModel and assigns it to Login.credentials
     // Should only be called once Login.customer has been populated
@@ -187,7 +181,7 @@ public class Login {
         if (customer == null) {
             System.out.println("Error: Do not user createCredentials() without retrieving/creating customer information first.");
         }
-        System.out.println("Creating new login credentials.");
+        System.out.println("\nCreating new login credentials.");
         System.out.println("Usernames must be between 8 to 30 characters in length and can only consist of alphanumeric characters and some symbols (. _-@)");
         String username = input.getUsername();
 
@@ -219,7 +213,6 @@ public class Login {
             customerRepo.addEmailAddress(customer);
         }
 
-        // Set login credentials
         // Customer data has been located, add their credentials to the database
         credentials = new CredentialModel(customer.getCustomerId(), username, password);
         Integer newCredentialId = credentialRepo.register(credentials);
@@ -234,6 +227,7 @@ public class Login {
         }
     }
 
+    // Setter function that assigns the customer record to this object.
     public void setCustomer(CustomerModel customer) {
         this.customer = customer;
     }

@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 public class Input {
     private static Input input;
     private final static Scanner scanner = new Scanner(System.in);
-
     public static Input getInputReference() {
         if (input == null) {
             input = new Input();
@@ -28,8 +27,8 @@ public class Input {
         return scanner.nextLine();
     }
 
-
-    // Gets user input (alphanumeric only) and returns the string.
+    // Gets user input (alphanumeric only, no length requirements) and returns the string.
+    // Returns an empty string if invalid input (ex. symbols) were detected.
     public String getString() {
         String input = getInput();
         if (isValidInputOfType("alphanumeric", input)) {
@@ -40,7 +39,6 @@ public class Input {
         }
     }
 
-
     // Similar to getString, this gets a user's name, validates that it is only letters and returns a capitalized string.
     // Intended for use with registration / new customer record.
     public String getName() {
@@ -49,7 +47,6 @@ public class Input {
             String name = input.getInput();
             if (userInitiatedCancel(name)) {
                 System.out.println("Cancelling registration.");
-                // check what effect this really has
                 return null;
             }
             if (isValidInputOfType("name", name)) {
@@ -66,19 +63,21 @@ public class Input {
     // Note: This can return 0, so make sure to check if that is a valid input in the calling method.
     public Double getCurrency() {
         try {
-            Double value = Double.parseDouble(scanner.nextLine());
-            if (value >= 0) {
-                // Attempting to round it to 2 decimal places
-                // pattern parameter - Using "0.00" returns a String, but "#.##" returns a Double (that cuts off trailing 0's)
-                DecimalFormat decimalFormat = new DecimalFormat("#.##");
-                // This produces a string form of the rounded number - seems to be necessary intermediate step
-                String roundedValue = decimalFormat.format(value);
-                // This attempts to parse the string into a Number.
-                Number number = decimalFormat.parse(roundedValue);
-                // Converting the number into a double (also rounds)
-                Double numericValue = number.doubleValue();
-
-                return numericValue;
+            String input = getInput();
+            Double value;
+            if (isValidInputOfType("currency", input)) {
+                value = Double.parseDouble(input);
+                if (value >= 0) {
+                    // Attempting to round it to 2 decimal places
+                    // pattern parameter - Using "0.00" returns a String, but "#.##" returns a Double (that cuts off trailing 0's)
+                    DecimalFormat decimalFormat = new DecimalFormat("#.##");
+                    // This produces a string form of the rounded number - seems to be necessary intermediate step
+                    String roundedValue = decimalFormat.format(value);
+                    // This attempts to parse the string into a Number.
+                    Number number = decimalFormat.parse(roundedValue);
+                    // Converting the number into a double (also rounds)
+                    return number.doubleValue();
+                }
             }
         }
         catch (NumberFormatException | ParseException e) {
@@ -138,14 +137,14 @@ public class Input {
     }
 
     // This is like the string method but only accepts checking type input (checking, savings)
-    // Returns the account type (string).
+    // Returns the account type (string) or null if the user cancelled entry.
     public String getCheckingType() {
         do {
             System.out.println("What type of account would you like to open?");
             System.out.println("1. Checking account");
             System.out.println("2. Savings account");
             System.out.print("I want to open: ");
-            String text = getInput();
+            String text = getString();
 
             switch (text.toLowerCase()) {
                 case "checking":
@@ -159,7 +158,7 @@ public class Input {
                 case "quit":
                 case "cancel":
                 case "exit":
-                    return "";
+                    return null;
                 default:
                     System.out.println("Sorry, that is not an option.  Please select either 'checking' or 'savings'.");
             }
@@ -173,7 +172,7 @@ public class Input {
             System.out.println("1. Yes");
             System.out.println("2. No");
             System.out.print("> ");
-            String input = getInput();
+            String input = getString();
 
             switch(input.toLowerCase()) {
                 case "yes":
@@ -216,8 +215,6 @@ public class Input {
         } while (true);
     }
 
-
-    // This is identical to what is in login, but maybe this version should be used instead.
     // Checks whether a user entered input that meant cancelling out of the current menu.
     // Returns a true if it finds something like cancel, false otherwise.
     public Boolean userInitiatedCancel(String input) {
@@ -234,7 +231,6 @@ public class Input {
     // Returns T/F if the input is valid (or not)
     private Boolean isValidInputOfType(String type, String input) {
         Pattern pattern, pattern2 = null;
-        // pattern = Pattern.compile("");
         switch(type) {
             case "username": {
                 pattern = Pattern.compile("^[a-zA-Z0-9@~._-]{8,}$");
@@ -258,11 +254,9 @@ public class Input {
             }
             case "currency": {
                 pattern = Pattern.compile("^[$]?[0-9]+[.]?[0-9]+$");
-                // Backup one that catches something like ".11":
                 pattern2 = Pattern.compile("^[$]?[.]?[0-9]+$");
                 break;
             }
-            // Only letters are allowed
             case "name": {
                 pattern = Pattern.compile("^[a-zA-Z -]+$");
                 break;

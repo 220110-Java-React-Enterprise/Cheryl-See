@@ -38,6 +38,7 @@ public class CustomerRepo {
 
             CustomerModel model = new CustomerModel(customerId);
             while (result.next()) {
+                model.setCredentialId(result.getInt("credential_id"));
                 model.setFirstName(result.getString("first_name"));
                 model.setLastName(result.getString("last_name"));
                 model.setAddress1(result.getString("address1"));
@@ -46,7 +47,6 @@ public class CustomerRepo {
                 model.setState(result.getString("state"));
                 model.setZipCode(result.getString("zip_code"));
                 model.setEmail(result.getString("email"));
-                model.setCredentialId(result.getInt("credential_id"));
             }
             return model;
         }

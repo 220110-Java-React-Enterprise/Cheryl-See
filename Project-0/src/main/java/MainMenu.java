@@ -10,47 +10,47 @@ public class MainMenu {
         Integer choice;
         do {
             choice = getUserMenuSelection();
+            System.out.println(""); // This is just to add a space / formatting after input
             switch(choice) {
                 case 1: {
-                    System.out.println("View account summary.\n");
                     account.printAllAccountData();
                     break;
                 }
                 case 2: {
-                    System.out.println("Deposit funds into an account.\n");
                     account.deposit();
                     break;
                 }
                 case 3: {
-                    System.out.println("Withdraw funds from an account.\n");
                     account.withdraw();
                     break;
                 }
                 case 4: {
-                    System.out.println("Transfer funds from an account.\n");
                     account.transfer();
                     break;
                 }
                 case 5: {
-                    System.out.println("View transaction history for a specified account.\n");
                     account.transactionHistory();
                     break;
                 }
                 case 6: {
-                    System.out.println("Create a new bank account.\n");
                     account.createAccount();
                     break;
                 }
                 case 7: {
-                    // Alternatively could make this into returning to login screen
                     System.out.println("Exiting program.  Have a nice day!\n");
                     System.exit(0);
                     break;
                 }
+                default: {
+                    System.out.println("That is not a valid selection.  Please choose one of the following options.");
+                }
             }
-        } while(choice != 7);
+        } while(true);
     }
 
+    // This is a helper function for doMenu() which displays the menu options and
+    // prompts the user for a selection.  Works with parseInput to return an integer
+    // representing the choice made.
     private Integer getUserMenuSelection() {
         System.out.println("\nPlease select one of the following options:");
         System.out.println("1. View an account overview.");
@@ -65,6 +65,7 @@ public class MainMenu {
         return parseInput(choice);
     }
 
+    // Helper function for getUserMenuSelection() which focuses on parsing the user menu selection.
     // Takes string input and converts it to an integer (menu choice) using a list of predefined words.
     // This helps check for some possible words (instead of numerical input) used in the main menu.
     private Integer parseInput(String input) {
@@ -74,7 +75,7 @@ public class MainMenu {
         String[] wordList4 = new String[]{"transfer", "four", "4"};
         String[] wordList5 = new String[]{"transaction", "history", "transactions", "five", "5"};
         String[] wordList6 = new String[]{"create", "new", "six", "6"};
-        String[] wordList7 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "logoff", "logout", "escape", "seven", "7"};
+        String[] wordList7 = new String[]{"quit", "exit", "leave", "close", "end", "stop", "signout", "sign out", "logoff", "logout", "escape", "seven", "7"};
         String[][] wordLists = new String[][]{wordList1, wordList2, wordList3, wordList4, wordList5, wordList6, wordList7};
         Integer selection = 1;
 
@@ -87,7 +88,6 @@ public class MainMenu {
             selection++;
         }
 
-        System.out.println("Debug: Didn't find menu choice in wordlist.");
         return -1;
     }
 

@@ -7,7 +7,6 @@ public class Account {
     CustomerRepo customerRepo = new CustomerRepo();
     AccountRepo accountRepo = new AccountRepo();
     TransactionRepo transactionRepo = new TransactionRepo();
-    //AccountOwnerRepo accountOwnerRepo = new AccountOwnerRepo();
     Integer customerId;
 
     // Withdraws money from an account.  Called after making a menu selection.
@@ -44,21 +43,17 @@ public class Account {
         }
         else {
             System.out.println("Sorry, you do not have the funds to perform this transaction.");
-            //System.out.println("You currently have $" + account.getBalance() + " and are trying to remove $" + amount + ".");
             System.out.printf("You currently have $%.2f and are trying to withdraw $%.2f.%n", account.getBalance(), amount);
-
         }
     }
 
-    // Checks if user has the funds for a transaction in the specified account.
-    // Does not apply to a deposit.
+    // Checks if user has the funds for a transaction in the specified account.  Does not apply to deposits.
     // Returns a boolean if true (able to do so) or false if there is not enough funds.
     private Boolean doesUserHaveFundsIn(AccountModel account, Double amount) {
         Double currentBalance = account.getBalance();
         if (currentBalance - amount < 0) {
             return false;
         }
-
         // User does have the funds for this transaction
         else {
             return true;
@@ -70,11 +65,10 @@ public class Account {
     // Account is the account being operated upon.  Type - deposit, withdraw, transfer
     // sourceId - account ID of where to transfer from, or -1 if self (deposit).
     // destinationId - accountID of where to transfer to, or -1 if self (withdraw).
-    // For transfers, just send the account it is being added to (destination). (maybe logic double checks this - positive amount)
-    // Returns a boolean if the transaction was successfully performed.
+    // For transfers, just send the account it is being added to (destination).
+    // Returns a boolean if the transaction was successfully performed or not.
     private Boolean doAccountBalanceUpdate(AccountModel account, String type, Double amount, Integer source, Integer destination) {
         Double newBalance;
-        //Double transferFromBalance; // Only used in transfers
         switch (type) {
             case "withdraw":
                 newBalance = account.getBalance() - amount;
@@ -90,7 +84,7 @@ public class Account {
                 }
             case "deposit":
                 newBalance = account.getBalance() + amount;
-                // Update the change locally then send to the accountRepo to make changes
+                // Update the change locally, then send to the accountRepo to make changes
                 account.setBalance(newBalance);
                 TransactionModel transaction2 = new TransactionModel(account.getAccountId(), amount, "deposit");
                 if (doTransaction(account, transaction2)) {
@@ -144,7 +138,8 @@ public class Account {
         return false;
     }
 
-    // Transfers money from an account
+    // Transfers money from one account to another (both owned by the user).
+    // Prompts the user for an account selection and walks them through the process.
     public void transfer() {
         // if user only has one / no account, they can't do a transfer
         if (list.size() <= 1) {
@@ -163,7 +158,7 @@ public class Account {
 
         // Verify you have the correct amount
         System.out.printf("You are transferring $%.2f.%n", amount);
-        System.out.println("To which account would you like to transfer your funds?");
+        System.out.println("\nTo which account would you like to transfer your funds?");
         AccountModel accountDestination = promptUserForAccountSelection();
 
         // Check if user has cancelled transaction
@@ -172,7 +167,7 @@ public class Account {
         }
 
         // Prompt a second time to get the source account
-        System.out.println("From which account would you like to transfer your funds?");
+        System.out.println("\nFrom which account would you like to transfer your funds?");
         AccountModel accountSource = promptUserForAccountSelection();
 
         // Check if user has cancelled transaction (in the source account)
@@ -234,12 +229,11 @@ public class Account {
         }
     }
 
-
     // Goes through the list of the customer's accounts and retrieves the balances.
     // Intended for use as a high level overview of account information.
     public void printAllAccountData() {
         if (list.size() == 0) {
-            System.out.printf("You have no accounts.");
+            System.out.println("You have no accounts.");
             return;
         }
         System.out.println("AccountNumber\t\tAccount Type\t\tBalance");
@@ -254,15 +248,21 @@ public class Account {
         }
     }
 
-
     // Creates a new bank account (ex. user already has a customer ID / login credentials, and wants to open a new acct)
     public void createAccount() {
         String accountType = input.getCheckingType();
+
+        // Check if user cancelled input or some sort of erroneous input
+        if (accountType == null) {
+            System.out.println("Cancelling account creation.");
+            return;
+        }
+
         System.out.print("How much would you like to deposit now? $");
         Double initialDeposit = input.getCurrency();
 
         // Check to see if a valid amount was entered
-        if (initialDeposit == -1) {
+        if (initialDeposit < 0) {
             System.out.println("Only positive values are accepted.  Currency can only consist of numbers and a decimal.");
             return;
         }
@@ -338,8 +338,7 @@ public class Account {
         }
     }
 
-
-    // Retrieves the transaction history for the specified account.
+    // Retrieves the transaction history for the specified account and prints it to the console.
     // Prompts user and prints a list of transactions for the selected account.
     public void transactionHistory() {
         System.out.println("For which account would you like to see the transaction history?");
@@ -365,7 +364,6 @@ public class Account {
                 String source = transaction.getSource().toString();
                 String destination = transaction.getDestination().toString();
 
-
                 switch(transaction.getType()) {
                     case "withdraw":
                         System.out.printf("Transaction #%d: %s %.2f withdrawn from acct #%s%n", transaction.getTransactionId(), transaction.getDate(), transaction.getAmount(), source);
@@ -386,10 +384,9 @@ public class Account {
         }
     }
 
-
     // This displays a list of the user's accounts and asks the user to select an account.
     // Returns the AccountModel of the selected account, or returns null if the user chooses to cancel the transaction.
-    // Note: returns null if the user selects "cancel transaction".
+    // Note: returns null if the user selects "cancel".
     public AccountModel promptUserForAccountSelection() {
         // List the user's accounts as well as a "quit" choice
         for (int i=0; i<list.size()+1; i++) {
@@ -422,17 +419,6 @@ public class Account {
                 return account;
             }
         }
-    }
-
-
-    // Primarily for use with the account types, but really anything
-    // Accepts a string, returns a Capitalized version of the string.
-    public String _capitalize(String text) {
-        // Capitalize the first letter of the string
-        String result = text.substring(0,1).toUpperCase();
-        // Attach the rest of the string (lower case)
-        result += text.substring(1);
-        return result;
     }
 
     // To prevent the local copy of data from getting out of sync with the database,

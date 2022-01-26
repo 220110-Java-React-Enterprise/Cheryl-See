@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 // Adding in the database connection logic here
-// Need a hostname, port, database name, username, password
+// Requ a hostname, port, database name, username, password
 // This makes a singleton class so there can only be one connection manager
 public class ConnectionManager {
 

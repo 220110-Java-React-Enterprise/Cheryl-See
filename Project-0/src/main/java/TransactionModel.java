@@ -1,8 +1,8 @@
 import java.util.Date;
 
+// Each transaction is a single debit/credit that forms an account's transaction history.
 public class TransactionModel {
-    // Each transaction is a single debit/credit that forms an account's transaction history.
-    Integer transactionId;  // autoincremented
+    Integer transactionId;  // auto-incremented
     Integer accountId;
     Date date;    // Timestamp
     Double amount;
@@ -25,7 +25,6 @@ public class TransactionModel {
     public void setSource(Integer source) {
         this.source = source;
     }
-
 
     public Integer getTransactionId() {
         return transactionId;

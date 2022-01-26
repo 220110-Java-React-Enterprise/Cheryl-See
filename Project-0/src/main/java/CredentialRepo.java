@@ -4,7 +4,7 @@ public class CredentialRepo {
     private final Connection connection;
 
     // Handles the write operations for the Credentials.
-    // This is meant for people registering for the first time
+    // This is meant for people registering for the first time.
     // Returns true if successful, else it returns false
     public Integer register(CredentialModel model) {
         try {
@@ -28,6 +28,7 @@ public class CredentialRepo {
 
     // Retrieves a credential record based on the ID number.
     // This would identify if a user tried to create a second login.
+    // If null is returned, it means it did not locate a login for this customer id.
     public CredentialModel getCredentialsByCustomerId(Integer id) {
         try {
             String sql = "SELECT * from credential WHERE customer_id = ?";
@@ -35,7 +36,6 @@ public class CredentialRepo {
             statement.setInt(1, id);
             ResultSet results = statement.executeQuery();
 
-            // Just using the blank one for now
             CredentialModel model = new CredentialModel();
             while(results.next()) {
                 model.setCredentialId(results.getInt("credential_id"));
@@ -50,7 +50,6 @@ public class CredentialRepo {
         }
         return null;
     }
-
 
     // Retrieves a single credential record based on the username and password.
     // If the username and password do not match, then null is returned.
@@ -78,7 +77,6 @@ public class CredentialRepo {
         }
         return null;
     }
-
 
     // Checks if a username is taken (unique)
     // Returns true if the username already exists in the database, else returns false

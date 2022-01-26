@@ -35,7 +35,6 @@ public class AccountRepo {
                 owner2.setCustomerId(owner2Id);
                 accountOwnersRepo.addAccountOwnerEntry(owner2);
             }
-
             return accountId;
         }
         catch(SQLException e) {
@@ -48,7 +47,6 @@ public class AccountRepo {
     public CustomLinkedList<AccountModel> getAccounts(Integer customerId) {
         try {
             String sql = "SELECT account.account_id, account.balance, account.type FROM pzero.account JOIN account_owner ON account.account_id = account_owner.account_id WHERE account_owner.customer_id = ?;";
-            // Can also use AccountOwnerRepo.getAccountsByCustomerId()
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, customerId);
             ResultSet results = statement.executeQuery();

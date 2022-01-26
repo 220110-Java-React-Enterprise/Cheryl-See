@@ -31,7 +31,7 @@ public class AccountOwnerModel {
         this.customerId = customerId;
     }
 
-    // This needs to be an empty constructor because we won't know the account_id until after account is inserted?
+    // This needs to be an empty constructor because we won't know the account_id until after account is inserted
     // or jdbc will work with this even without account added
    AccountOwnerModel () {
    }
